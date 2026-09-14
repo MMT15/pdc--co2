@@ -3,7 +3,7 @@
 Macheta interactivă a unei pompe de căldură cu CO₂ (R744) în regim transcritic,
 pentru încălzire (calorifere 55/45 °C) și apă caldă menajeră (60 °C).
 
-**Pagina live:** https://mmt15.github.io/pdc-co2/
+**Pagina live:** https://mmt15.github.io/pdc--co2/
 
 ## Ce conține
 
