@@ -1,0 +1,2324 @@
+<title>Macheta PDC CO₂</title>
+<style>
+  :root{
+    --bg:#eef1f4; --bg2:#e2e7ec; --panel:#ffffff; --panel-2:#f4f6f8;
+    --line:#c9d1d8; --text:#1b232c; --text-dim:#5b6672; --text-faint:#8a94a0;
+    --accent:#0f8fa3; --accent-2:#e0782f; --accent-3:#2f6fb0;
+    --ok:#2f9e58; --warn:#c9932f; --crit:#c23b3b;
+    --shadow:0 8px 24px rgba(20,30,40,.14), 0 1px 3px rgba(20,30,40,.10);
+    --radius:10px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0e1218; --bg2:#141a22; --panel:#161d26; --panel-2:#1b2330;
+      --line:#2a3442; --text:#e6ecf2; --text-dim:#9aa7b5; --text-faint:#6a7684;
+      --accent:#3fd0e6; --accent-2:#f2924a; --accent-3:#6fb0f0;
+      --ok:#49c47a; --warn:#e0ac4a; --crit:#e2635a;
+      --shadow:0 10px 30px rgba(0,0,0,.45), 0 1px 3px rgba(0,0,0,.4);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0e1218; --bg2:#141a22; --panel:#161d26; --panel-2:#1b2330;
+    --line:#2a3442; --text:#e6ecf2; --text-dim:#9aa7b5; --text-faint:#6a7684;
+    --accent:#3fd0e6; --accent-2:#f2924a; --accent-3:#6fb0f0;
+    --ok:#49c47a; --warn:#e0ac4a; --crit:#e2635a;
+    --shadow:0 10px 30px rgba(0,0,0,.45), 0 1px 3px rgba(0,0,0,.4);
+    color-scheme: dark;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;background:var(--bg);}
+  body{
+    font-family:"IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+    color:var(--text);
+    overflow:hidden;
+    background:var(--bg);
+  }
+  .mono{font-family:"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;}
+
+  #stage{position:fixed; inset:0;}
+  canvas{display:block; touch-action:none;}
+
+  #veil{position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+    background:var(--bg); z-index:50; transition:opacity .5s ease;}
+  #veil .l{font-family:"IBM Plex Mono",monospace; color:var(--text-dim); font-size:13px; letter-spacing:.06em;}
+  #veil .l b{color:var(--accent);}
+
+  /* ---- top bar ---- */
+  #topbar{
+    position:fixed; top:0; left:0; right:0; z-index:20;
+    display:flex; align-items:center; gap:18px;
+    padding:10px 16px; height:56px;
+    background:linear-gradient(180deg, color-mix(in srgb, var(--panel) 92%, transparent), color-mix(in srgb, var(--panel) 70%, transparent));
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  #brand{display:flex; flex-direction:column; line-height:1.15; margin-right:6px;}
+  #brand .t1{font-weight:700; font-size:14.5px; letter-spacing:.01em;}
+  #brand .t2{font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--text-faint); letter-spacing:.04em;}
+
+  .seg{display:flex; align-items:center; gap:4px; background:var(--panel-2); border:1px solid var(--line);
+    border-radius:8px; padding:3px;}
+  .seg button{
+    appearance:none; border:none; background:transparent; color:var(--text-dim);
+    font-family:"IBM Plex Sans",sans-serif; font-size:12px; font-weight:600; letter-spacing:.01em;
+    padding:6px 11px; border-radius:6px; cursor:pointer; white-space:nowrap;
+  }
+  .seg button:hover{color:var(--text);}
+  .seg button.active{background:var(--accent); color:#04262b;}
+  :root[data-theme="dark"] .seg button.active,
+  :root:not([data-theme="light"]) .seg button.active{color:#04181c;}
+  @media (prefers-color-scheme: light){ :root:not([data-theme="dark"]) .seg button.active{color:#04262b;} }
+
+  #topbar .spacer{flex:1;}
+  #hint{font-size:11.5px; color:var(--text-faint); font-family:"IBM Plex Mono",monospace; display:none;}
+  @media (min-width:1080px){ #hint{display:block;} }
+
+  #themeToggle{
+    width:32px; height:32px; border-radius:8px; border:1px solid var(--line); background:var(--panel-2);
+    color:var(--text-dim); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px;
+  }
+
+  /* ---- right dock ---- */
+  #dock{
+    position:fixed; top:66px; right:14px; bottom:14px; z-index:20;
+    width:296px; display:flex; flex-direction:column; gap:10px;
+    overflow-y:auto; overflow-x:hidden; pointer-events:auto;
+    scrollbar-color: var(--line) transparent; scrollbar-width: thin;
+  }
+  #dock > .panel{flex:none;}
+  #dock::-webkit-scrollbar{width:9px;}
+  #dock::-webkit-scrollbar-track{background:transparent;}
+  #dock::-webkit-scrollbar-thumb{background:var(--line); border-radius:5px; border:2px solid transparent; background-clip:padding-box;}
+  #dock::-webkit-scrollbar-thumb:hover{background:var(--text-faint); background-clip:padding-box;}
+  .panel{
+    background:color-mix(in srgb, var(--panel) 94%, transparent);
+    backdrop-filter:blur(10px);
+    border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .panel h3{
+    margin:0; padding:10px 13px 9px; font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.08em; color:var(--text-faint); border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .panel .body{padding:11px 13px 13px;}
+
+  .layerRow{display:flex; align-items:center; gap:9px; padding:6px 0; font-size:12.5px;}
+  .layerRow .swatch{width:11px; height:11px; border-radius:3px; flex:none; box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);}
+  .layerRow label{flex:1; cursor:pointer; user-select:none;}
+  .layerRow .cnt{font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--text-faint);}
+  .toggle{
+    width:30px; height:17px; border-radius:9px; background:var(--line); position:relative; flex:none; cursor:pointer;
+    transition:background .15s ease; border:none;
+  }
+  .toggle::after{content:""; position:absolute; top:2px; left:2px; width:13px; height:13px; border-radius:50%;
+    background:var(--panel); transition:transform .15s ease; box-shadow:0 1px 2px rgba(0,0,0,.3);}
+  .toggle.on{background:var(--accent);}
+  .toggle.on::after{transform:translateX(13px);}
+
+  #legend .grad{height:9px; border-radius:5px; margin:6px 0 3px;}
+  #legend .gradRow{display:flex; justify-content:space-between; font-family:"IBM Plex Mono",monospace; font-size:9.5px; color:var(--text-faint); margin-bottom:9px;}
+  #legend .fluidLbl{display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; margin-top:2px;}
+  #legend .dot{width:9px;height:9px;border-radius:50%;}
+
+  #info{flex:1; min-height:0; display:flex; flex-direction:column;}
+  #info .body{flex:1; overflow-y:auto; padding-top:10px;}
+  #info .tag{font-family:"IBM Plex Mono",monospace; font-size:15px; font-weight:700; color:var(--accent);}
+  #info .altTag{font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--text-faint); margin-left:6px;}
+  #info .name{font-size:13.5px; font-weight:600; margin:3px 0 9px; line-height:1.3;}
+  #info .desc{font-size:12px; color:var(--text-dim); line-height:1.55; margin-bottom:10px;}
+  #info table{width:100%; border-collapse:collapse; font-size:11.5px;}
+  #info td{padding:4px 0; border-top:1px solid var(--line); vertical-align:top;}
+  #info td.k{color:var(--text-faint); width:44%; padding-right:8px;}
+  #info td.v{font-family:"IBM Plex Mono",monospace; color:var(--text); text-align:right;}
+  #info .empty{color:var(--text-faint); font-size:12px; line-height:1.6; padding-top:2px;}
+  #info .pulse{display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--ok); margin-right:6px;
+    box-shadow:0 0 0 3px color-mix(in srgb, var(--ok) 25%, transparent);}
+
+  .ilBanner{border-radius:8px; padding:8px 10px; font-size:11.5px; font-weight:700; margin-bottom:8px; line-height:1.4;}
+  .ilBanner.ok{background:color-mix(in srgb, var(--ok) 16%, var(--panel-2)); color:var(--ok);}
+  .ilBanner.crit{background:color-mix(in srgb, var(--crit) 16%, var(--panel-2)); color:var(--crit);}
+  .ilBanner.idle{background:var(--panel-2); color:var(--text-dim);}
+  .ilBanner.info{background:color-mix(in srgb, var(--accent) 16%, var(--panel-2)); color:var(--accent);}
+  .ilRow{display:flex; align-items:flex-start; gap:8px; padding:6px 0; border-top:1px solid var(--line); font-size:11.5px;}
+  .ilRow:first-child{border-top:none;}
+  .ilDot{width:9px; height:9px; border-radius:50%; margin-top:2px; flex:none;}
+  .ilDot.ok{background:var(--ok); box-shadow:0 0 0 3px color-mix(in srgb, var(--ok) 20%, transparent);}
+  .ilDot.crit{background:var(--crit); box-shadow:0 0 0 3px color-mix(in srgb, var(--crit) 25%, transparent);}
+  .ilTxt b{display:block; font-size:11.5px; color:var(--text);}
+  .ilTxt span{display:block; font-size:10px; color:var(--text-faint); margin-top:1px; font-family:"IBM Plex Mono",monospace;}
+
+  #clipAxisSeg button{flex:1; text-align:center;}
+  #clipSlider{accent-color:var(--accent);}
+
+  #lines .body{max-height:300px; overflow-y:auto; padding-top:8px;}
+  .lnGroup{font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.07em;
+    color:var(--accent); margin:9px 0 3px;}
+  .lnGroup:first-child{margin-top:0;}
+  .lnRow{display:flex; gap:6px; align-items:baseline; padding:3px 0; border-top:1px solid var(--line); font-size:10.5px;}
+  .lnRow .d{flex:1; color:var(--text-dim); line-height:1.35;}
+  .lnRow .n{font-family:"IBM Plex Mono",monospace; color:var(--text); white-space:nowrap; font-size:10px;}
+  .lnTot{margin-top:10px; padding-top:8px; border-top:1px solid var(--line);
+    font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--text-dim); line-height:1.7;}
+  .lnTot b{color:var(--text);}
+  .lnNote{font-size:10px; color:var(--text-faint); line-height:1.5; margin-top:8px;}
+
+  .spark{width:100%; height:40px; display:block; margin-top:2px;}
+  .sparkWrap{margin-top:10px;}
+  .sparkWrap .lab{display:flex; justify-content:space-between; font-size:10px; color:var(--text-faint); font-family:"IBM Plex Mono",monospace; margin-bottom:2px;}
+
+  /* ---- bottom-left scenario strip ---- */
+  #scenario{
+    position:fixed; left:14px; bottom:14px; z-index:20;
+    display:flex; flex-direction:column; gap:8px; width:460px; max-width:calc(100vw - 28px);
+  }
+  #scenario .row{display:grid; grid-template-columns:repeat(3, 1fr); gap:6px;}
+  #scenario button.sc{
+    text-align:left; padding:8px 9px; border-radius:8px; border:1px solid var(--line);
+    background:var(--panel-2); cursor:pointer; color:var(--text-dim);
+  }
+  #scenario button.sc .t{display:block; font-size:11.5px; font-weight:700; color:var(--text);}
+  #scenario button.sc .s{display:block; font-family:"IBM Plex Mono",monospace; font-size:9.5px; margin-top:2px; color:var(--text-faint);}
+  #scenario button.sc.active{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 14%, var(--panel-2));}
+  #scenario button.sc.active .t{color:var(--accent);}
+
+  #statusStrip{
+    background:color-mix(in srgb, var(--panel) 94%, transparent); backdrop-filter:blur(10px);
+    border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:9px 12px; display:flex; gap:14px; font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--text-dim);
+  }
+  #statusStrip .st{display:flex; flex-direction:column; gap:2px;}
+  #statusStrip .st b{font-size:12.5px; color:var(--text); font-weight:600;}
+  #statusStrip .st span{color:var(--text-faint); font-size:9px; text-transform:uppercase; letter-spacing:.05em;}
+
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+
+  #tooltip{
+    position:fixed; z-index:30; pointer-events:none; transform:translate(-50%,-130%);
+    background:var(--panel); border:1px solid var(--line); border-radius:7px; padding:5px 9px;
+    font-size:11.5px; font-weight:600; box-shadow:var(--shadow); white-space:nowrap; display:none;
+  }
+
+  @media (max-width:860px){
+    #dock{display:none;}
+    #scenario{width:calc(100vw - 28px);}
+  }
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<div id="veil"><div class="l">se încarcă macheta&nbsp; <b>·</b> &nbsp;PDC CO₂ · calorifere 55/45 · ACM 60 °C</div></div>
+
+<div id="stage"></div>
+
+<div id="topbar">
+  <div id="brand">
+    <div class="t1">Pompă de căldură CO₂ — macheta 3D</div>
+    <div class="t2">TRANSCRITIC R744 &middot; 2 gas coolere &middot; calorifere 55/45 &middot; ACM 60&nbsp;°C</div>
+  </div>
+  <div class="seg" id="camModeSeg">
+    <button data-mode="orbit" class="active">Orbit</button>
+    <button data-mode="fly">Liber (WASD)</button>
+  </div>
+  <div class="seg" id="viewSeg">
+    <button data-view="iso">Izometric</button>
+    <button data-view="front">Față</button>
+    <button data-view="top">De sus</button>
+    <button data-view="co2">Circuit CO₂</button>
+    <button data-view="tanks">Rezervoare</button>
+  </div>
+  <div class="spacer"></div>
+  <div id="hint">trage = rotește &middot; scroll = zoom &middot; click pe echipament = detalii</div>
+  <button id="themeToggle" title="Comută tema">◐</button>
+</div>
+
+<div id="dock">
+  <div class="panel" id="layers">
+    <h3>Straturi</h3>
+    <div class="body" id="layerBody"></div>
+  </div>
+
+  <div class="panel" id="legend">
+    <h3>Legendă conducte</h3>
+    <div class="body">
+      <div class="fluidLbl"><span class="dot" style="background:hsl(27 85% 42%)"></span>CO₂ (R744)</div>
+      <div class="grad" style="background:linear-gradient(90deg, hsl(27 72% 58%), hsl(27 93% 30%))"></div>
+      <div class="gradRow"><span>−5 °C</span><span>rece → cald</span><span>110 °C</span></div>
+      <div class="fluidLbl"><span class="dot" style="background:hsl(207 70% 40%)"></span>Apă (sursă / încălzire)</div>
+      <div class="grad" style="background:linear-gradient(90deg, hsl(207 55% 62%), hsl(207 82% 27%))"></div>
+      <div class="gradRow"><span>0 °C</span><span>rece → cald</span><span>75 °C</span></div>
+      <div style="font-size:10.5px;color:var(--text-faint);line-height:1.5;margin-top:2px;">
+        Nuanța = fluid — CO₂ e <b>mereu portocaliu</b>, apa e <b>mereu albastră</b>, inclusiv la rece (nu devine albă, ca să nu se confunde una cu alta). Doar luminozitatea scade cu temperatura. Eticheta de pe fiecare tronson indică CO₂/apă și TUR/RETUR/sursă.
+      </div>
+      <div style="font-size:10.5px;color:var(--text-faint);line-height:1.5;margin-top:8px;padding-top:8px;border-top:1px solid var(--line);">
+        <b style="color:var(--text-dim);">Două gas coolere, în serie pe CO₂:</b> CO₂-ul trece întâi prin
+        <b>HX-302</b> (apă menajeră, de la ~12 °C rețea la 60 °C) și abia apoi prin <b>HX-301</b> (calorifere 45→55 °C).
+        Ordinea contează: ACM-ul are nevoie de vârful pantei de răcire. „Robinetul" e pompa de apă — un schimbător
+        fără debit pe o parte nu transferă practic nimic, deci modurile alternează fără vane pe înaltă presiune.
+      </div>
+      <div style="font-size:10.5px;color:var(--text-faint);line-height:1.5;margin-top:8px;padding-top:8px;border-top:1px solid var(--line);">
+        <b style="color:var(--text-dim);">Transcritic vs. subcritic:</b> peste pragul critic al CO₂ (73,8 bar / 31,1°C), agentul e supracritic — de la C-301 până la V-301 (HX-301 e „gas cooler", nu condensator). Sub V-301, presiunea scade sub prag și CO₂ devine bifazic (evaporare reală în E-301) — regim subcritic clasic. Vezi fișa V-301 pentru graniță.
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="interlocks">
+    <h3>Interblocări &amp; alarme</h3>
+    <div class="body">
+      <div id="interlockBanner" class="ilBanner">—</div>
+      <div id="interlockRows"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="section">
+    <h3>Secțiune (vezi rack-ul din spate)</h3>
+    <div class="body">
+      <div class="layerRow"><label for="clipOn">Plan de tăiere activ</label><button class="toggle" id="clipOn"></button></div>
+      <div class="seg" id="clipAxisSeg" style="margin:8px 0;">
+        <button data-axis="x" class="active">De-a lungul X</button>
+        <button data-axis="z">De-a lungul Z</button>
+      </div>
+      <input type="range" id="clipSlider" min="0" max="100" value="100" style="width:100%;">
+      <div style="font-size:10.5px;color:var(--text-faint);margin-top:4px;">Trage cursorul ca să retragi partea din față și să vezi rack-ul de conducte și interiorul rezervoarelor.</div>
+    </div>
+  </div>
+
+  <div class="panel" id="lines">
+    <h3>Listă linii (execuție)</h3>
+    <div class="body" id="linesBody"></div>
+  </div>
+
+  <div class="panel" id="info">
+    <h3>Echipament <span id="infoClose" style="cursor:pointer; opacity:.7;">✕</span></h3>
+    <div class="body" id="infoBody">
+      <div class="empty">Selectează un click pe orice compresor, schimbător, rezervor, pompă, vană sau senzor din machetă pentru fișa lui tehnică — datele provin din documentația P&amp;ID / line-list.</div>
+    </div>
+  </div>
+</div>
+
+<div id="scenario">
+  <div id="statusStrip">
+    <div class="st"><span>Compresor</span><b id="stComp">—</b></div>
+    <div class="st"><span>CO₂ HP / LP</span><b id="stCo2">—</b></div>
+    <div class="st"><span>Tur / retur încălzire</span><b id="stApa">—</b></div>
+    <div class="st"><span>Boiler ACM</span><b id="stAcm">—</b></div>
+    <div class="st"><span>Debit flux</span><b id="stFlow">—</b></div>
+  </div>
+  <div class="row" id="scenarioRow"></div>
+</div>
+
+<div id="tooltip"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+/* =========================================================================
+   POMPĂ DE CĂLDURĂ CO2 TRANSCRITICĂ 14-16kW — macheta 3D funcțională
+   Sursă: documentația tehnică (P&ID, line-list, hidraulica rezervoare,
+   fișe tehnice echipamente). Taguri normalizate pe schema cea mai completă
+   (linia "SCENARIU 5-70°C"); tag-urile alternative din P&ID sunt păstrate
+   în fișele fiecărui echipament pentru trasabilitate.
+   ========================================================================= */
+
+(function(){
+"use strict";
+
+/* ---------------------------------------------------------------------
+   0. THEME
+--------------------------------------------------------------------- */
+function currentTheme(){
+  const forced = document.documentElement.getAttribute('data-theme');
+  if(forced === 'dark' || forced === 'light') return forced;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+const THEMES = {
+  light:{ bg:0xdfe6ec, fog:0xdfe6ec, floor:0xc7ceD6, floorLine:0xaab2bb, hemiSky:0xffffff, hemiGround:0x8a94a0, hemiI:0.95, sunI:1.55, ambI:0.55 },
+  dark: { bg:0x0a0d12, fog:0x0a0d12, floor:0x151b22, floorLine:0x232c36, hemiSky:0x93a7c2, hemiGround:0x05070a, hemiI:0.55, sunI:1.35, ambI:0.28 }
+};
+
+/* ---------------------------------------------------------------------
+   1. SCENE / CAMERA / RENDERER
+--------------------------------------------------------------------- */
+const stage = document.getElementById('stage');
+const scene = new THREE.Scene();
+let theme = currentTheme();
+scene.background = new THREE.Color(THEMES[theme].bg);
+scene.fog = new THREE.Fog(THEMES[theme].bg, 11, 27);
+
+const camera = new THREE.PerspectiveCamera(42, innerWidth/innerHeight, 0.05, 100);
+const CENTER = new THREE.Vector3(3.35, 0.90, 1.0);
+camera.position.set(8.6, 5.2, 7.6);
+
+const renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+stage.appendChild(renderer.domElement);
+
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.target.copy(CENTER);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 1.6;
+controls.maxDistance = 18;
+controls.maxPolarAngle = Math.PI*0.495;
+controls.update();
+
+/* ---------------------------------------------------------------------
+   1b. FREE-FLY CAMERA — alternative to orbit-around-a-fixed-point:
+   drag to look around in place (no pointer lock, so the side panels stay
+   clickable), WASD/arrows to move, Q/E (or Ctrl/Space) for down/up,
+   Shift to move faster. Toggled from the "Orbit / Liber" segment.
+--------------------------------------------------------------------- */
+let camMode = 'orbit';
+const flyState = { yaw:0, pitch:0, keys:Object.create(null), dragging:false, lastX:0, lastY:0 };
+const flyTmp = { fwd:new THREE.Vector3(), right:new THREE.Vector3(), up:new THREE.Vector3(0,1,0), move:new THREE.Vector3() };
+
+function setCamMode(mode){
+  camMode = mode;
+  document.querySelectorAll('#camModeSeg button').forEach(b=> b.classList.toggle('active', b.dataset.mode===mode));
+  document.getElementById('hint').textContent = mode==='fly'
+    ? 'trage = privește · WASD/săgeți = mișcă · Q/E = jos/sus · Shift = mai rapid'
+    : 'trage = rotește · scroll = zoom · click pe echipament = detalii';
+  if(mode==='fly'){
+    controls.enabled = false;
+    const e = new THREE.Euler(0,0,0,'YXZ'); e.setFromQuaternion(camera.quaternion,'YXZ');
+    flyState.yaw = e.y; flyState.pitch = e.x;
+  } else {
+    camera.getWorldDirection(flyTmp.fwd);
+    controls.target.copy(camera.position).addScaledVector(flyTmp.fwd, 3);
+    controls.enabled = true;
+  }
+}
+document.querySelectorAll('#camModeSeg button').forEach(b=>{
+  b.addEventListener('click', ()=> setCamMode(b.dataset.mode));
+});
+
+window.addEventListener('keydown', (e)=>{
+  flyState.keys[e.code] = true;
+  if(camMode==='fly' && ['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyQ','KeyE'].includes(e.code)) e.preventDefault();
+});
+window.addEventListener('keyup', (e)=>{ flyState.keys[e.code] = false; });
+
+renderer.domElement.addEventListener('pointerdown', (e)=>{
+  if(camMode!=='fly' || e.button!==0) return;
+  flyState.dragging = true; flyState.lastX = e.clientX; flyState.lastY = e.clientY;
+});
+window.addEventListener('pointerup', ()=>{ flyState.dragging = false; });
+renderer.domElement.addEventListener('pointermove', (e)=>{
+  if(camMode==='fly' && flyState.dragging){
+    const dx = e.clientX-flyState.lastX, dy = e.clientY-flyState.lastY;
+    flyState.lastX = e.clientX; flyState.lastY = e.clientY;
+    flyState.yaw -= dx*0.0035;
+    flyState.pitch = THREE.MathUtils.clamp(flyState.pitch - dy*0.0035, -Math.PI*0.49, Math.PI*0.49);
+    camera.quaternion.setFromEuler(new THREE.Euler(flyState.pitch, flyState.yaw, 0, 'YXZ'));
+  }
+});
+
+function updateFly(dt){
+  if(camMode!=='fly') return;
+  const speed = (flyState.keys.ShiftLeft||flyState.keys.ShiftRight) ? 5.5 : 2.2;
+  camera.getWorldDirection(flyTmp.fwd);
+  flyTmp.right.crossVectors(flyTmp.fwd, flyTmp.up).normalize();
+  let mx=0, mz=0, my=0;
+  if(flyState.keys.KeyW||flyState.keys.ArrowUp) mz += 1;
+  if(flyState.keys.KeyS||flyState.keys.ArrowDown) mz -= 1;
+  if(flyState.keys.KeyD||flyState.keys.ArrowRight) mx += 1;
+  if(flyState.keys.KeyA||flyState.keys.ArrowLeft) mx -= 1;
+  if(flyState.keys.KeyE||flyState.keys.Space) my += 1;
+  if(flyState.keys.KeyQ||flyState.keys.ControlLeft) my -= 1;
+  if(mx||mz||my){
+    flyTmp.move.set(0,0,0)
+      .addScaledVector(flyTmp.fwd, mz)
+      .addScaledVector(flyTmp.right, mx)
+      .addScaledVector(flyTmp.up, my)
+      .normalize().multiplyScalar(speed*dt);
+    camera.position.add(flyTmp.move);
+  }
+}
+
+window.addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+/* ---------------------------------------------------------------------
+   2. LIGHTING + GROUND
+--------------------------------------------------------------------- */
+let hemi, sun, amb;
+function buildLights(){
+  const t = THEMES[theme];
+  if(hemi) scene.remove(hemi);
+  if(sun) scene.remove(sun);
+  if(amb) scene.remove(amb);
+  hemi = new THREE.HemisphereLight(t.hemiSky, t.hemiGround, t.hemiI);
+  scene.add(hemi);
+  sun = new THREE.DirectionalLight(0xfff3e0, t.sunI);
+  sun.position.set(5, 7, 4);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048,2048);
+  sun.shadow.camera.left = -4.5; sun.shadow.camera.right = 4.5;
+  sun.shadow.camera.top = 4; sun.shadow.camera.bottom = -3;
+  sun.shadow.camera.near = 1; sun.shadow.camera.far = 16;
+  sun.shadow.bias = -0.0015;
+  scene.add(sun);
+  amb = new THREE.AmbientLight(0xffffff, t.ambI);
+  scene.add(amb);
+}
+
+function makeFloorTexture(lineColor, baseA, baseB){
+  const c = document.createElement('canvas'); c.width = c.height = 512;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = baseA; ctx.fillRect(0,0,512,512);
+  for(let i=0;i<2200;i++){
+    ctx.fillStyle = Math.random()>0.5 ? baseB : baseA;
+    ctx.globalAlpha = 0.05 + Math.random()*0.06;
+    ctx.fillRect(Math.random()*512, Math.random()*512, 2+Math.random()*3, 2+Math.random()*3);
+  }
+  ctx.globalAlpha = 0.35;
+  ctx.strokeStyle = lineColor; ctx.lineWidth = 2;
+  for(let i=0;i<=512;i+=64){ ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,512);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(512,i);ctx.stroke(); }
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(6,4);
+  tex.encoding = THREE.sRGBEncoding;
+  return tex;
+}
+
+let floorMesh;
+function buildFloor(){
+  if(floorMesh) scene.remove(floorMesh);
+  const t = THEMES[theme];
+  const hex = c => '#' + c.toString(16).padStart(6,'0');
+  const tex = makeFloorTexture(hex(t.floorLine), hex(t.floor), hex(t.floorLine));
+  const mat = new THREE.MeshStandardMaterial({map:tex, roughness:0.92, metalness:0.02});
+  floorMesh = new THREE.Mesh(new THREE.PlaneGeometry(34,24), mat);
+  floorMesh.rotation.x = -Math.PI/2;
+  floorMesh.position.set(3.35,0,1.0);
+  floorMesh.receiveShadow = true;
+  scene.add(floorMesh);
+}
+
+function applyTheme(){
+  theme = currentTheme();
+  const t = THEMES[theme];
+  scene.background = new THREE.Color(t.bg);
+  scene.fog.color.set(t.bg);
+  buildLights();
+  buildFloor();
+}
+buildLights(); buildFloor();
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+document.getElementById('themeToggle').addEventListener('click', ()=>{
+  const cur = document.documentElement.getAttribute('data-theme') || currentTheme();
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  applyTheme();
+});
+
+/* ---------------------------------------------------------------------
+   3. MATERIALS
+--------------------------------------------------------------------- */
+const MAT = {
+  frame:      new THREE.MeshStandardMaterial({color:0x9aa3ab, metalness:0.65, roughness:0.42}),
+  frameDark:  new THREE.MeshStandardMaterial({color:0x6b727a, metalness:0.6, roughness:0.5}),
+  deck:       new THREE.MeshStandardMaterial({color:0x848d95, metalness:0.5, roughness:0.6}),
+  compBody:   new THREE.MeshStandardMaterial({color:0x2c6b4b, metalness:0.35, roughness:0.38}),
+  compHead:   new THREE.MeshStandardMaterial({color:0x1c4a32, metalness:0.4, roughness:0.35}),
+  compDetail: new THREE.MeshStandardMaterial({color:0x14231c, metalness:0.3, roughness:0.55}),
+  steel:      new THREE.MeshStandardMaterial({color:0xd7dbde, metalness:0.8, roughness:0.26}),
+  steelDark:  new THREE.MeshStandardMaterial({color:0xaab0b6, metalness:0.75, roughness:0.32}),
+  copper:     new THREE.MeshStandardMaterial({color:0xb8733f, metalness:0.75, roughness:0.35}),
+  brass:      new THREE.MeshStandardMaterial({color:0xa88a4c, metalness:0.65, roughness:0.36}),
+  flange:     new THREE.MeshStandardMaterial({color:0x4d525a, metalness:0.7, roughness:0.4}),
+  insul:      new THREE.MeshStandardMaterial({color:0xece9df, roughness:0.62, metalness:0.02}),
+  insulCap:   new THREE.MeshStandardMaterial({color:0xd9d6c9, roughness:0.6, metalness:0.02}),
+  gasCyl:     new THREE.MeshStandardMaterial({color:0xb6bbc0, metalness:0.5, roughness:0.35}),
+  gasCylCap:  new THREE.MeshStandardMaterial({color:0x2a2f34, metalness:0.5, roughness:0.4}),
+  panelBody:  new THREE.MeshStandardMaterial({color:0xd6d3c8, metalness:0.35, roughness:0.55}),
+  panelDoor:  new THREE.MeshStandardMaterial({color:0x33383d, metalness:0.5, roughness:0.45}),
+  handleBlue: new THREE.MeshStandardMaterial({color:0x2f6fb0, metalness:0.2, roughness:0.4}),
+  handleRed:  new THREE.MeshStandardMaterial({color:0xb23a2f, metalness:0.2, roughness:0.4}),
+  black:      new THREE.MeshStandardMaterial({color:0x1c1f22, metalness:0.3, roughness:0.5}),
+  gaugeBody:  new THREE.MeshStandardMaterial({color:0xe8e8e6, metalness:0.4, roughness:0.3}),
+  motor:      new THREE.MeshStandardMaterial({color:0x2a2d31, metalness:0.5, roughness:0.42}),
+  pumpBody:   new THREE.MeshStandardMaterial({color:0xb0463d, metalness:0.4, roughness:0.4}),
+  glowGreen:  new THREE.MeshStandardMaterial({color:0x36d17a, emissive:0x0e5a2c, emissiveIntensity:0.8}),
+  glowAmber:  new THREE.MeshStandardMaterial({color:0xf2b13a, emissive:0x6a4a0c, emissiveIntensity:0.7}),
+  glowRed:    new THREE.MeshStandardMaterial({color:0xe2544a, emissive:0x7a120c, emissiveIntensity:0.9}),
+};
+
+/* ---------------------------------------------------------------------
+   4. GENERIC GEOMETRY HELPERS
+--------------------------------------------------------------------- */
+const V3 = (x,y,z)=> new THREE.Vector3(x,y,z);
+
+function cylBetween(p1,p2,radius,mat,segments){
+  const dir = new THREE.Vector3().subVectors(p2,p1);
+  const len = dir.length();
+  if(len < 1e-5) return null;
+  const geo = new THREE.CylinderGeometry(radius,radius,len,segments||12,1,false);
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.copy(p1).addScaledVector(dir,0.5);
+  const q = new THREE.Quaternion().setFromUnitVectors(V3(0,1,0), dir.clone().normalize());
+  mesh.quaternion.copy(q);
+  mesh.castShadow = true; mesh.receiveShadow = true;
+  return mesh;
+}
+
+function box(w,h,d,mat){
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat);
+  m.castShadow = true; m.receiveShadow = true;
+  return m;
+}
+function cyl(rt,rb,h,mat,seg){
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg||20), mat);
+  m.castShadow = true; m.receiveShadow = true;
+  return m;
+}
+function sph(r,mat,seg){
+  const m = new THREE.Mesh(new THREE.SphereGeometry(r,seg||14,seg||10), mat);
+  m.castShadow = true; m.receiveShadow = true;
+  return m;
+}
+
+function ballValve(handleMat){
+  const g = new THREE.Group();
+  const body = cyl(0.026,0.026,0.075,MAT.brass,14);
+  body.rotation.z = Math.PI/2; g.add(body);
+  const stem = cyl(0.007,0.007,0.05,MAT.steelDark,8);
+  stem.position.y = 0.035; g.add(stem);
+  const handle = box(0.09,0.014,0.02,handleMat);
+  handle.position.y = 0.062; g.add(handle);
+  return g;
+}
+
+function gauge(tag){
+  const g = new THREE.Group();
+  const stem = cyl(0.008,0.008,0.05,MAT.steelDark,8); stem.position.y=0.025; g.add(stem);
+  const body = cyl(0.045,0.045,0.03,MAT.gaugeBody,24); body.rotation.x=Math.PI/2; body.position.y=0.06; g.add(body);
+  const c = document.createElement('canvas'); c.width=c.height=128;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle='#f4f3ee'; ctx.beginPath(); ctx.arc(64,64,60,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#20242a'; ctx.lineWidth=3; ctx.stroke();
+  ctx.fillStyle='#20242a'; ctx.font='9px sans-serif'; ctx.textAlign='center';
+  for(let i=0;i<=10;i++){
+    const a = Math.PI*0.75 + i*(Math.PI*1.5/10);
+    const x1=64+Math.cos(a)*52, y1=64+Math.sin(a)*52, x2=64+Math.cos(a)*58, y2=64+Math.sin(a)*58;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.strokeStyle='#3a4048'; ctx.lineWidth=1.5; ctx.stroke();
+  }
+  ctx.fillStyle='#6b7280'; ctx.font='11px sans-serif'; ctx.fillText('bar',64,84);
+  const tex = new THREE.CanvasTexture(c);
+  const dial = new THREE.Mesh(new THREE.CircleGeometry(0.041,24), new THREE.MeshStandardMaterial({map:tex, roughness:0.5}));
+  dial.position.set(0,0.06,0.0155); g.add(dial);
+  const needle = box(0.028,0.0035,0.003, new THREE.MeshStandardMaterial({color:0xc23b3b}));
+  needle.position.set(0,0.06,0.017); needle.geometry.translate(0.013,0,0);
+  g.add(needle);
+  g.userData.needle = needle;
+  return g;
+}
+
+function airVent(){
+  const g = new THREE.Group();
+  const body = cyl(0.02,0.026,0.05,MAT.brass,10); body.position.y=0.025; g.add(body);
+  const cap = sph(0.018,MAT.brass,10); cap.position.y=0.05; g.add(cap);
+  return g;
+}
+
+function thermowell(){
+  const g = new THREE.Group();
+  const rod = cyl(0.006,0.006,0.05,MAT.steelDark,8); rod.rotation.x=Math.PI/2; rod.position.z=0.025; g.add(rod);
+  const head = box(0.03,0.03,0.03,MAT.black); head.position.z=0.055; g.add(head);
+  return g;
+}
+
+/* ---------------------------------------------------------------------
+   5. LABEL SPRITES (canvas-based, screen-facing)
+--------------------------------------------------------------------- */
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+}
+
+function makeSprite(lines, opts){
+  opts = opts || {};
+  const scale = 2;
+  const padX = 16*scale, padY = 10*scale;
+  const c = document.createElement('canvas');
+  const ctx = c.getContext('2d');
+  const fontMain = `${(opts.size||13)*scale}px "IBM Plex Mono", monospace`;
+  const fontSub = `${(opts.subSize||10.5)*scale}px "IBM Plex Sans", sans-serif`;
+  ctx.font = fontMain;
+  let maxW = 0;
+  const widths = lines.map((l,i)=>{ ctx.font = i===0?fontMain:fontSub; const w = ctx.measureText(l).width; if(w>maxW) maxW=w; return w; });
+  const lineH = [ (opts.size||13)*1.5*scale ].concat(lines.slice(1).map(()=> (opts.subSize||10.5)*1.55*scale));
+  const totalH = lineH.reduce((a,b)=>a+b,0);
+  c.width = Math.ceil(maxW + padX*2);
+  c.height = Math.ceil(totalH + padY*2);
+  ctx.clearRect(0,0,c.width,c.height);
+  ctx.fillStyle = opts.bg || 'rgba(14,18,24,0.86)';
+  roundRect(ctx,0,0,c.width,c.height, 9*scale); ctx.fill();
+  if(opts.border){
+    ctx.strokeStyle = opts.border; ctx.lineWidth = 2.4*scale;
+    roundRect(ctx,1.2*scale,1.2*scale,c.width-2.4*scale,c.height-2.4*scale,8*scale); ctx.stroke();
+  }
+  let y = padY;
+  lines.forEach((l,i)=>{
+    ctx.font = i===0?fontMain:fontSub;
+    ctx.fillStyle = i===0 ? (opts.color||'#eef2f6') : (opts.subColor||'#9aa7b5');
+    ctx.textBaseline = 'top';
+    ctx.fillText(l, padX, y + (i===0?2:1)*scale);
+    y += lineH[i];
+  });
+  const tex = new THREE.CanvasTexture(c);
+  tex.encoding = THREE.sRGBEncoding;
+  const mat = new THREE.SpriteMaterial({map:tex, transparent:true, depthTest:opts.depthTest!==false, depthWrite:false});
+  const spr = new THREE.Sprite(mat);
+  const wU = (opts.worldH || 0.16) * (c.width/c.height);
+  spr.scale.set(wU, opts.worldH||0.16, 1);
+  spr.renderOrder = opts.renderOrder||10;
+  return spr;
+}
+
+/* ---------------------------------------------------------------------
+   6. GROUPS (toggle-able layers)
+--------------------------------------------------------------------- */
+const gStructure   = new THREE.Group(); scene.add(gStructure);
+const gEquipment   = new THREE.Group(); scene.add(gEquipment);
+const gPipeCO2     = new THREE.Group(); scene.add(gPipeCO2);
+const gPipeSource  = new THREE.Group(); scene.add(gPipeSource);
+const gPipePrimary = new THREE.Group(); scene.add(gPipePrimary);
+const gPipeSecond  = new THREE.Group(); scene.add(gPipeSecond);
+const gPipeAcm     = new THREE.Group(); scene.add(gPipeAcm);
+const gInstruments = new THREE.Group(); scene.add(gInstruments);
+const gAux         = new THREE.Group(); scene.add(gAux);
+const gLabelsEquip = new THREE.Group(); scene.add(gLabelsEquip);
+const gLabelsPipe  = new THREE.Group(); scene.add(gLabelsPipe);
+const gParticles   = new THREE.Group(); scene.add(gParticles);
+
+/* ---------------------------------------------------------------------
+   7. STATE (fluid temperatures / pressures per scenario)
+   -- exposed on window for future live (CODESYS) updates --
+--------------------------------------------------------------------- */
+const SCENARIOS = {
+  nominal:{
+    label:'Regim nominal', sub:'iarnă · calorifere 55/45 · ACM plin', running:true,
+    co2_disc:85, co2_afterACM:84, co2_afterHX:50, co2_afterEEV:-2, co2_suction:4,
+    pt_hp:92, pt_lp:38,
+    apaSrcIn:5, apaSrcOut:0,
+    apaIncTur:55, apaIncRetur:45,
+    apaConsTur:55, apaConsRetur:45,
+    tA_top:54, tA_bot:46,
+    acmTemp:60, priorityMsg:null,
+    flow:1.0,
+    srcFlowOk:true, hpOk:true, turOk:true, deltaTOk:true, safetyOpen:false,
+    alarmMsg:null
+  },
+  startup:{
+    label:'Pornire', sub:'preîncălzire rezervor + boilere', running:true,
+    co2_disc:52, co2_afterACM:31, co2_afterHX:28, co2_afterEEV:3, co2_suction:9,
+    pt_hp:58, pt_lp:41,
+    apaSrcIn:5, apaSrcOut:3,
+    apaIncTur:38, apaIncRetur:33,
+    apaConsTur:35, apaConsRetur:33,
+    tA_top:36, tA_bot:33,
+    acmTemp:32, priorityMsg:null,
+    flow:0.55,
+    srcFlowOk:true, hpOk:true, turOk:true, deltaTOk:true, safetyOpen:false,
+    alarmMsg:null
+  },
+  standby:{
+    label:'Standby', sub:'PDC oprită · fără flux', running:false,
+    co2_disc:22, co2_afterACM:21, co2_afterHX:22, co2_afterEEV:20, co2_suction:21,
+    pt_hp:45, pt_lp:44,
+    apaSrcIn:16, apaSrcOut:16,
+    apaIncTur:20, apaIncRetur:20,
+    apaConsTur:19, apaConsRetur:19,
+    tA_top:20, tA_bot:19,
+    acmTemp:56, priorityMsg:null,
+    flow:0,
+    srcFlowOk:true, hpOk:true, turOk:true, deltaTOk:true, safetyOpen:false,
+    alarmMsg:null
+  },
+  acm_peak:{
+    label:'Val dușuri (ACM)', sub:'3 dușuri simultan → prioritate ACM', running:true,
+    co2_disc:95, co2_afterACM:20, co2_afterHX:20, co2_afterEEV:-3, co2_suction:4,
+    pt_hp:78, pt_lp:38,
+    apaSrcIn:5, apaSrcOut:0,
+    apaIncTur:52, apaIncRetur:45,
+    apaConsTur:52, apaConsRetur:44,
+    tA_top:51, tA_bot:45,
+    acmTemp:52, priorityMsg:'Cerere ACM activă — pompa caloriferelor e oprită, deci HX-301 nu transferă nimic și tot CO₂-ul de 95 °C ajunge în HX-302, care îl răcește până la ~20 °C cu apă de rețea. Exact aici se vede câștigul variantei B: presiunea optimă scade la 78 bar și COP-ul urcă spre 4. Caloriferele merg din inerția lui T-CAL01 (~90 min).',
+    flow:0.9,
+    srcFlowOk:true, hpOk:true, turOk:true, deltaTOk:true, safetyOpen:false,
+    alarmMsg:null
+  },
+  alarm_noflow:{
+    label:'Alarmă — lipsă debit', sub:'FT-SURSĂ = 0 → PDC blocată la pornire', running:false,
+    co2_disc:20, co2_afterACM:19, co2_afterHX:20, co2_afterEEV:19, co2_suction:19,
+    pt_hp:40, pt_lp:39,
+    apaSrcIn:16, apaSrcOut:16,
+    apaIncTur:18, apaIncRetur:18,
+    apaConsTur:18, apaConsRetur:18,
+    tA_top:18, tA_bot:18,
+    acmTemp:22, priorityMsg:null,
+    flow:0,
+    srcFlowOk:false, hpOk:true, turOk:true, deltaTOk:true, safetyOpen:false,
+    alarmMsg:'FT-SURSĂ nu confirmă debit — condiția de pornire PDC nu este îndeplinită (vezi P&ID §Logica de control).'
+  },
+  alarm_highp:{
+    label:'Alarmă — presiune mare', sub:'PT-HP peste prag → SV-01 deschide', running:false,
+    co2_disc:118, co2_afterACM:60, co2_afterHX:52, co2_afterEEV:6, co2_suction:14,
+    pt_hp:142, pt_lp:46,
+    apaSrcIn:5, apaSrcOut:1,
+    apaIncTur:68, apaIncRetur:52,
+    apaConsTur:64, apaConsRetur:50,
+    tA_top:66, tA_bot:53,
+    acmTemp:58, priorityMsg:null,
+    flow:0.15,
+    srcFlowOk:true, hpOk:false, turOk:true, deltaTOk:true, safetyOpen:true,
+    alarmMsg:'PT-HP peste limita admisă — protecție de suprapresiune activă, SV-01 a deschis și compresorul se oprește.'
+  }
+};
+let scenarioKey = 'nominal';
+let state = Object.assign({}, SCENARIOS[scenarioKey]);
+window.PDC = { state, SCENARIOS, setScenario:null, setTemp:null }; // public hook for future live link
+
+/* colour mapping -------------------------------------------------------
+   Hue always identifies the fluid (CO2 = orange, water = blue) and never
+   drifts toward white — only lightness moves with temperature, and its
+   range is capped so "cold" stays a clearly-saturated pale hue, not grey. */
+function fluidColor(fluid, tempC){
+  if(!state.running){
+    return new THREE.Color().setHSL((fluid==='co2'?27:207)/360, 0.12, 0.50);
+  }
+  if(fluid==='co2'){
+    const t = THREE.MathUtils.clamp((tempC+10)/(115+10),0,1);
+    return new THREE.Color().setHSL(27/360, THREE.MathUtils.lerp(0.72,0.93,t), THREE.MathUtils.lerp(0.58,0.30,t));
+  }
+  const t = THREE.MathUtils.clamp(tempC/75,0,1);
+  return new THREE.Color().setHSL(207/360, THREE.MathUtils.lerp(0.55,0.82,t), THREE.MathUtils.lerp(0.62,0.27,t));
+}
+
+/* ---------------------------------------------------------------------
+   8. EQUIPMENT REGISTRY + INFO PANEL
+--------------------------------------------------------------------- */
+const equipRegistry = [];
+function registerEquip(group, data){
+  data._pos = group.position.clone();     // cotă de montaj, pentru fișa tehnică
+  group.userData.info = data;
+  equipRegistry.push(group);
+  gEquipment.add(group);
+  if(data.labelPos){
+    const spr = makeSprite([data.tag, data.short||''], {size:12.5, subSize:9.5, worldH:0.11, border:data.borderColor||'rgba(255,255,255,.25)'});
+    spr.position.copy(data.labelPos);
+    gLabelsEquip.add(spr);
+    group.userData.labelSprite = spr;
+  }
+}
+
+function fmt(v,u){ return (v===undefined||v===null||v==='') ? '—' : (v + (u?(' '+u):'')); }
+
+/* ---------------------------------------------------------------------
+   8b. LIVE-STYLE HISTORY (rolling buffer per tracked field) + sparklines
+   Values ease toward the active scenario's setpoint rather than jumping,
+   so a scenario switch reads as a transient — exactly what a real trend
+   will look like once these fields are driven from CODESYS.
+--------------------------------------------------------------------- */
+const HIST_LEN = 40;
+const liveValue = {};
+const history = {};
+function tickHistory(){
+  Object.keys(state).forEach(k=>{
+    if(typeof state[k] !== 'number') return;
+    if(liveValue[k]===undefined) liveValue[k] = state[k];
+    liveValue[k] += (state[k]-liveValue[k])*0.18;
+    const noisy = liveValue[k] + (Math.random()-0.5)*(Math.abs(state[k])>5?0.25:0.05);
+    const arr = history[k] || (history[k]=[]);
+    arr.push(noisy);
+    if(arr.length>HIST_LEN) arr.shift();
+  });
+}
+
+function sparklineSVG(arr, color){
+  if(!arr || arr.length<2) return '';
+  const w=252, h=40, pad=3;
+  const min = Math.min.apply(null,arr), max = Math.max.apply(null,arr);
+  const span = (max-min)<0.5 ? 0.5 : (max-min);
+  const pts = arr.map((v,i)=>{
+    const x = pad + i*((w-pad*2)/(arr.length-1));
+    const y = h-pad - ((v-min)/span)*(h-pad*2);
+    return x.toFixed(1)+','+y.toFixed(1);
+  }).join(' ');
+  const last = arr[arr.length-1];
+  const lastPt = pts.split(' ').pop().split(',');
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${lastPt[0]}" cy="${lastPt[1]}" r="2.6" fill="${color}"/>
+  </svg>`;
+}
+
+function showInfo(data){
+  const b = document.getElementById('infoBody');
+  const rows = (data.specs||[]).map(r=>`<tr><td class="k">${r[0]}</td><td class="v mono">${r[1]}</td></tr>`).join('');
+  const trends = (data.trend||[]).map(t=>{
+    const arr = history[t.key]||[];
+    const cur = arr.length ? arr[arr.length-1] : state[t.key];
+    const col = '#'+fluidColor(t.fluid, state[t.key]).getHexString();
+    return `<div class="sparkWrap">
+      <div class="lab"><span>${t.label}</span><span>${cur!==undefined?cur.toFixed(1):'—'} ${t.unit}</span></div>
+      ${sparklineSVG(arr, col)}
+    </div>`;
+  }).join('');
+  // cote de montaj + racordurile care ajung la această componentă
+  let geom = '';
+  if(data._pos){
+    geom += `<tr><td class="k">Poziție pe schelet X / Z</td><td class="v mono">${data._pos.x.toFixed(2)} / ${data._pos.z.toFixed(2)} m</td></tr>`;
+  }
+  const mine = pipeRegistry.filter(pp => (pp.from+' '+pp.to).indexOf(data.tag)>=0);
+  const conns = mine.length ? ('<div class="lnTot" style="margin-top:10px">' + mine.map(pp=>{
+    const isFrom = pp.from.indexOf(data.tag)>=0;
+    const other  = isFrom ? pp.to : pp.from;
+    const port   = (isFrom?pp.from:pp.to).replace(data.tag,'').trim() || '—';
+    return `${isFrom?'→':'←'} <b>${port}</b> ${isFrom?'către':'de la'} ${other}<br>
+            <span style="color:var(--text-faint)">${DN_REAL[pp.dn]||('DN'+pp.dn)} · ${pp.len.toFixed(2)} m · ${pp.bends} coturi</span>`;
+  }).join('<br>') + '</div>') : '';
+
+  b.innerHTML = `
+    <div><span class="tag">${data.tag}</span><span class="altTag">${data.alt?('alt. '+data.alt):''}</span></div>
+    <div class="name">${data.name}</div>
+    <div class="desc">${data.desc||''}</div>
+    <table>${rows}${geom}</table>
+    ${conns ? '<div class="lnGroup" style="margin-top:12px">Racorduri</div>'+conns : ''}
+    ${trends}
+  `;
+  currentInfoData = data;
+}
+let currentInfoData = null;
+document.getElementById('infoClose').addEventListener('click', ()=>{
+  currentInfoData = null;
+  document.getElementById('infoBody').innerHTML = '<div class="empty">Selectează un echipament din machetă pentru fișa lui tehnică.</div>';
+});
+
+/* ---------------------------------------------------------------------
+   9. LAYOUT — floor-plan anchor points (Y = 0 at deck surface)
+--------------------------------------------------------------------- */
+const DECK_Y = 0.05;
+const POS = {
+  filterSrc:  V3(0.24, DECK_Y, 0.42),
+  pumpSrc:    V3(0.72, DECK_Y, 0.42),
+  evap:       V3(1.28, DECK_Y, 1.12),
+  comp:       V3(1.28, DECK_Y, 0.42),
+  eev:        V3(1.74, DECK_Y, 1.12),
+  gascooler:  V3(2.20, DECK_Y, 1.12),
+  pumpPrim:   V3(2.66, DECK_Y, 0.42),
+  vex:        V3(2.72, DECK_Y, 1.78),
+  // single buffer tank for the (small, 3-room) space-heating loop — see
+  // 16b below for why this replaced the original 3-tank chain.
+  tankA:      V3(3.32, DECK_Y, 1.18),
+  // ACM (domestic hot water) sub-system, sized TBD — sits where the two
+  // extra heating tanks used to be, since that volume is now free.
+  // VARIANTA B: al doilea gas cooler, direct pe CO₂, pentru ACM. Stă în
+  // continuarea rândului de schimbătoare, primul pe traseul CO₂ după
+  // compresor — ia vârful pantei de răcire (100 °C), ca să poată face
+  // ACM de 60 °C; caloriferele iau restul.
+  hx302:      V3(2.66, DECK_Y, 1.12),
+  pumpAcm:    V3(3.88, DECK_Y, 0.42),
+  pumpSec:    V3(4.30, DECK_Y, 0.42),
+  manifold:   V3(4.25, DECK_Y, 1.75),
+  // 2 × 300 l boilere ACM în SERIE, vase ZVELTE (Ø≈500, H≈1,53 m — H/D 3,1):
+  // forma contează mai mult decât numărul, un vas scund Ø600 ar pierde ~30 l
+  // de capacitate utilă prin amestecare.
+  tAcm1:      V3(4.95, DECK_Y, 1.18),
+  tAcm2:      V3(5.57, DECK_Y, 1.18),
+  acmSource:  V3(4.75, DECK_Y, 1.80),
+  acmDist:    V3(6.25, DECK_Y, 1.18),
+  panel:      V3(6.55, DECK_Y, 0.20),
+  co2bottles: V3(0.24, DECK_Y, 1.80),
+};
+// shared vertical "shelves" the pipe rack routes travel on — three bands
+// that never overlap in Y, so different circuits can never visually cross:
+// low service trench (0.10–0.45), water pipe rack (1.40–1.95), CO2 pipe
+// rack (2.00–2.40). Each individual run also gets its own unique height
+// inside its band, so no two distinct pipes ever share a plane either.
+const SHELF = {
+  // primaryReturn/consumerReturn both cross under the tank row, so they
+  // must stay below y=0.15 (where the insulated tank shells start) —
+  // everything else here is clear of the tanks and just needs to be unique.
+  // srcToEvap must clear the compressor (sits directly in its path, top
+  // ≈0.50) rather than the generic 0.15 tank rule, hence the taller 0.60.
+  primaryReturn:0.12, consumerReturn:0.08, srcToEvap:0.60, gascoolerRetIn:0.34, srcReturn:0.42,
+  topChain:1.46, secSupply:1.60, primaryTur:1.74, secTur:1.88,
+  co2Discharge:2.06, co2Suction:2.36,
+  // HX-301 / V-301 / E-301 sit within ~1m of each other — routing those
+  // two short jumpers all the way to the high CO2 rack made them vanish
+  // above the frame in a normal view. Keep them short and local instead:
+  // co2LocalA stays below both BPHE bodies, co2LocalB clears the
+  // evaporator's own top (1.13) since it sweeps past it in X.
+  co2LocalA:0.60, co2LocalB:1.20,
+};
+
+/* ---------------------------------------------------------------------
+   10. STRUCTURE — skid deck / frame / pipe-rack posts
+--------------------------------------------------------------------- */
+(function buildStructure(){
+  const DX0=-0.15, DX1=6.85, DZ0=-0.05, DZ1=2.10;
+  const deck = box(DX1-DX0, 0.05, DZ1-DZ0, MAT.deck);
+  deck.position.set((DX0+DX1)/2, 0.025, (DZ0+DZ1)/2);
+  deck.receiveShadow = true;
+  gStructure.add(deck);
+
+  // perimeter angle rail
+  const railY = 0.052;
+  const perim = [
+    [DX0+0.02,DZ0+0.02,DX1-0.02,DZ0+0.02], [DX0+0.02,DZ1-0.02,DX1-0.02,DZ1-0.02],
+    [DX0+0.02,DZ0+0.02,DX0+0.02,DZ1-0.02], [DX1-0.02,DZ0+0.02,DX1-0.02,DZ1-0.02]
+  ];
+  perim.forEach(([x1,z1,x2,z2])=>{
+    const seg = cylBetween(V3(x1,railY,z1), V3(x2,railY,z2), 0.02, MAT.frameDark, 6);
+    if(seg) gStructure.add(seg);
+  });
+
+  // Elevated pipe-rack gantry: two tiers of longitudinal rails, one just
+  // under the water-circuit shelves, one just under the CO2 shelves — a
+  // visible structural reason the pipe runs travel where they do.
+  function rackSpan(xFrom, xTo, z, y, postEvery){
+    const rail = cylBetween(V3(xFrom,y,z), V3(xTo,y,z), 0.022, MAT.frame, 8);
+    gStructure.add(rail);
+    for(let x=xFrom; x<=xTo+1e-6; x+=postEvery){
+      const post = cylBetween(V3(x,0,z), V3(x,y,z), 0.02, MAT.frame, 8);
+      gStructure.add(post);
+      const brace = cylBetween(V3(x,y,z), V3(x+postEvery*0.5,y-0.10,z), 0.010, MAT.frameDark, 6);
+      if(x+postEvery<=xTo+1e-6) gStructure.add(brace);
+    }
+  }
+  rackSpan(0.95, 6.00, 1.42, 1.34, 1.10);   // water-circuit rack (below 1.46–1.88 shelves)
+  rackSpan(1.05, 2.90, 1.42, 1.98, 0.70);   // CO2 cluster rack (below 2.06–2.36 shelves)
+
+  // small feet under the deck
+  [[DX0+0.2,DZ0+0.2],[DX1-0.2,DZ0+0.2],[DX0+0.2,DZ1-0.2],[DX1-0.2,DZ1-0.2],[2.5,DZ0+0.2],[2.5,DZ1-0.2],[4.8,DZ0+0.2],[4.8,DZ1-0.2]].forEach(([x,z])=>{
+    const foot = cyl(0.03,0.03,0.05,MAT.frameDark,10);
+    foot.position.set(x,-0.025,z);
+    gStructure.add(foot);
+  });
+})();
+
+/* ---------------------------------------------------------------------
+   11. EQUIPMENT BUILDERS
+--------------------------------------------------------------------- */
+
+// -- 11.1 Compressor C-301 --------------------------------------------
+function buildCompressor(origin){
+  const g = new THREE.Group(); g.position.copy(origin);
+  const base = box(0.60,0.05,0.44,MAT.frameDark); base.position.y=0.025; g.add(base);
+  const block = box(0.46,0.32,0.36,MAT.compBody); block.position.y=0.05+0.16; g.add(block);
+  const head = box(0.30,0.13,0.30,MAT.compHead); head.position.set(-0.02,0.05+0.32+0.065,0.0); g.add(head);
+  const valveCover = box(0.14,0.07,0.24,MAT.compDetail); valveCover.position.set(0.15,0.05+0.32+0.035,0); g.add(valveCover);
+  const termBox = box(0.13,0.17,0.11,MAT.compDetail); termBox.position.set(0.30,0.05+0.19,0.02); g.add(termBox);
+  for(let i=0;i<4;i++){
+    const fin = box(0.36,0.008,0.30,MAT.compDetail);
+    fin.position.set(-0.02, 0.05+0.05+i*0.06, 0);
+    g.add(fin);
+  }
+  const led = sph(0.008,MAT.glowGreen,8); led.position.set(0.30,0.05+0.28,0.076); g.add(led);
+  g.userData.led = led;
+
+  const dischargeLocal = V3(0.16, 0.05+0.32+0.10, -0.10);
+  const suctionLocal   = V3(-0.16, 0.05+0.32+0.10, -0.10);
+  [dischargeLocal, suctionLocal].forEach(p=>{
+    const stub = cyl(0.014,0.014,0.05,MAT.steelDark,10); stub.rotation.x=Math.PI/2;
+    stub.position.copy(p).add(V3(0,0,-0.02)); g.add(stub);
+  });
+
+  registerEquip(g, {
+    tag:'C-301', alt:'C-101', name:'Compresor CO₂ transcritic',
+    short:'BITZER 4JTC-15K-40P',
+    desc:'Comprimă CO₂ de la presiunea LP (30–45 bar) la presiunea HP (80–95 bar, zonă transcritică). Protejat de presostate HP/LP și releu termic.',
+    specs:[['Debit volumetric','9,2 m³/h @ 50 Hz'],['Turație','1450 rpm'],['Curent nominal','31 A'],['Presiuni max.','75 / 130 bar'],['Alimentare','400 V, 3~'],['Putere el. absorbită','4,8–5,5 kW']],
+    trend:[{key:'co2_disc', label:'T° refulare', unit:'°C', fluid:'co2'}, {key:'co2_suction', label:'T° aspirație', unit:'°C', fluid:'co2'}],
+    labelPos: origin.clone().add(V3(0,0.62,0)), borderColor:'rgba(60,209,122,.55)'
+  });
+
+  return { group:g, ports:{
+    discharge: origin.clone().add(dischargeLocal),
+    suction:   origin.clone().add(suctionLocal.clone().add(V3(0,0.09,0)))
+  }};
+}
+
+// -- 11.2 Brazed plate heat exchanger (gas cooler / evaporator) -------
+function buildBPHE(origin, opts){
+  const g = new THREE.Group(); g.position.copy(origin);
+  const h=0.46,w=0.24,d=0.11;
+  const baseY = 0.62;
+  const stand = cylBetween(V3(0,0,0),V3(0,baseY,0),0.02,MAT.frameDark,8); g.add(stand);
+  const stand2 = cylBetween(V3(0.16,0,0),V3(0.16,baseY,0),0.02,MAT.frameDark,8); g.add(stand2);
+  const block = box(w,h,d,MAT.steel); block.position.set(0.08, baseY+h/2, 0); g.add(block);
+  // corrugation hint
+  for(let i=1;i<8;i++){
+    const line = box(w*0.94,0.006,d*1.01, MAT.steelDark);
+    line.position.set(0.08, baseY+ i*(h/8), 0);
+    g.add(line);
+  }
+  const plate = box(0.10,0.05,0.002, MAT.flange);
+  plate.position.set(0.08, baseY+h*0.5, d/2+0.002); g.add(plate);
+
+  const co2InLocal  = V3(0.08+w/2-0.02, baseY+h-0.03, opts.co2Top? -d/2 : d/2);
+  const co2OutLocal = V3(0.08+w/2-0.02, baseY+0.03, opts.co2Top? -d/2 : d/2);
+  const waterInLocal  = V3(0.08-w/2+0.02, baseY+0.03, d/2);
+  const waterOutLocal = V3(0.08-w/2+0.02, baseY+h-0.03, d/2);
+  [co2InLocal,co2OutLocal,waterInLocal,waterOutLocal].forEach(p=>{
+    const stub = cyl(0.014,0.014,0.045,MAT.steelDark,10); stub.rotation.x=Math.PI/2; stub.position.copy(p); g.add(stub);
+  });
+
+  registerEquip(g, Object.assign({
+    labelPos: origin.clone().add(V3(0.08, baseY+h+0.13, 0)), borderColor:'rgba(224,120,47,.5)'
+  }, opts.info));
+
+  return { group:g, ports:{
+    co2In:  origin.clone().add(co2InLocal),
+    co2Out: origin.clone().add(co2OutLocal),
+    waterIn:  origin.clone().add(waterInLocal),
+    waterOut: origin.clone().add(waterOutLocal)
+  }};
+}
+
+// -- 11.3 Electronic expansion valve V-301 -----------------------------
+function buildEEV(origin){
+  const g = new THREE.Group(); g.position.copy(origin);
+  const baseY = 0.78;
+  const body = cyl(0.028,0.028,0.11,MAT.brass,14); body.rotation.z=Math.PI/2; body.position.set(0,baseY,0); g.add(body);
+  const actuator = cyl(0.024,0.024,0.09,MAT.steelDark,14); actuator.position.set(0,baseY+0.09,0); g.add(actuator);
+  const coilTop = cyl(0.018,0.018,0.03,MAT.black,10); coilTop.position.set(0,baseY+0.155,0); g.add(coilTop);
+
+  registerEquip(g, {
+    tag:'V-301', alt:'V-EXP', name:'Supapă de expansiune electronică CO₂',
+    short:'comandă 0–10 V / stepper',
+    desc:'Laminează CO₂ de la presiunea HP la presiunea LP, la intrarea în evaporator. Deschiderea este modulată electronic. Este exact granița termodinamică a ciclului: înainte de vană, CO₂ e fluid supracritic, omogen (peste 73,8 bar / 31,1°C — fără fază lichidă distinctă); după laminare, presiunea scade sub pragul critic și CO₂ devine amestec bifazic lichid-vapori, ca într-un circuit frigorific clasic.',
+    specs:[['Comandă','0–10 V (sau stepper)'],['Presiune max.','≥ 120 bar'],['Regim înainte / după','supracritic → bifazic subcritic']],
+    labelPos: origin.clone().add(V3(0,baseY+0.28,0)), borderColor:'rgba(224,120,47,.5)'
+  });
+
+  return { group:g, ports:{ in: origin.clone().add(V3(-0.06,baseY,0)), out: origin.clone().add(V3(0.06,baseY,0)) } };
+}
+
+// -- 11.4 Circulation pump ---------------------------------------------
+function buildPump(origin, data, flip){
+  const g = new THREE.Group(); g.position.copy(origin);
+  const bodyY = 0.09;
+  const pipe = cyl(0.022,0.022,0.16,MAT.steelDark,12); pipe.rotation.z=Math.PI/2; pipe.position.set(0,bodyY,0); g.add(pipe);
+  const volute = cyl(0.045,0.045,0.06,MAT.pumpBody,16); volute.position.set(0,bodyY,0); g.add(volute);
+  const motor = cyl(0.032,0.032,0.11,MAT.motor,16); motor.position.set(0,bodyY+0.10,0); g.add(motor);
+  const cap = cyl(0.033,0.02,0.02,MAT.motor,16); cap.position.set(0,bodyY+0.165,0); g.add(cap);
+  for(let i=0;i<5;i++){
+    const fin = cyl(0.033,0.033,0.005,MAT.compDetail,16);
+    fin.position.set(0,bodyY+0.045+i*0.018,0); g.add(fin);
+  }
+  if(flip) g.rotation.y = Math.PI;   // aspirația spre dreapta, refularea spre stânga
+  registerEquip(g, Object.assign({labelPos:origin.clone().add(V3(0,0.32,0)), borderColor:'rgba(63,208,230,.5)'}, data));
+  return { group:g, ports:{
+    in:  origin.clone().add(V3(flip? 0.08:-0.08,bodyY,0)),
+    out: origin.clone().add(V3(flip?-0.08: 0.08,bodyY,0))
+  }};
+}
+
+// -- 11.5 Y-strainer -----------------------------------------------------
+function buildYFilter(origin){
+  const g = new THREE.Group(); g.position.copy(origin);
+  const y=0.09;
+  const main = cyl(0.018,0.018,0.14,MAT.brass,12); main.rotation.z=Math.PI/2; main.position.set(0,y,0); g.add(main);
+  const branch = cyl(0.015,0.015,0.09,MAT.brass,12); branch.rotation.x=Math.PI/5.5; branch.position.set(0.01,y-0.05,0.02); g.add(branch);
+  const cap = cyl(0.02,0.02,0.02,MAT.flange,12); cap.rotation.x=Math.PI/5.5; cap.position.set(0.012,y-0.09,0.037); g.add(cap);
+  registerEquip(g, {
+    tag:'Filtru Y', name:'Filtru Y — aspirație', desc:'Reține impuritățile din apa de sursă înaintea pompei P-301.',
+    specs:[['Poziție','aspirație P-301']],
+    labelPos: origin.clone().add(V3(0,0.24,0)), borderColor:'rgba(111,176,240,.5)'
+  });
+  return { group:g, ports:{ in: origin.clone().add(V3(-0.07,y,0)), out: origin.clone().add(V3(0.07,y,0)) } };
+}
+
+// -- 11.6 Buffer tank T-30x ---------------------------------------------
+function buildTank(origin, tagInfo, dims){
+  const g = new THREE.Group(); g.position.copy(origin);
+  // r/h sunt cotele reale ale mantalei: raportul H/D decide cât de bine
+  // stratifică vasul, deci nu sunt doar cosmetice.
+  const r=(dims&&dims.r)||0.26, h=(dims&&dims.h)||1.12, legH=0.10;
+  [[-r*0.62,-r*0.38],[r*0.62,-r*0.38],[-r*0.62,r*0.38],[r*0.62,r*0.38]].forEach(([x,z])=>{
+    const leg = cyl(0.014,0.014,legH,MAT.frameDark,8); leg.position.set(x,legH/2,z); g.add(leg);
+  });
+  const body = cyl(r,r,h,MAT.insul,28); body.position.y = legH+h/2; g.add(body);
+  const topCap = sph(r,MAT.insulCap,20,16); topCap.scale.y=0.5; topCap.position.y = legH+h; g.add(topCap);
+  const botCap = sph(r,MAT.insulCap,20,16); botCap.scale.y=0.5; botCap.rotation.x=Math.PI; botCap.position.y = legH; g.add(botCap);
+
+  // stratification bands (top = hot colour, bottom = cooler colour) driven by state
+  const bandTop = cyl(r*1.002,r*1.002,0.10,MAT.steel.clone(),28); bandTop.position.y = legH+h-0.14; g.add(bandTop);
+  const bandBot = cyl(r*1.002,r*1.002,0.10,MAT.steel.clone(),28); bandBot.position.y = legH+0.14; g.add(bandBot);
+  bandTop.material.emissiveIntensity = 0.15; bandBot.material.emissiveIntensity = 0.15;
+  bandTop.material.emissive = new THREE.Color(0x111111); bandBot.material.emissive = new THREE.Color(0x111111);
+
+  // nameplate band
+  const band = cyl(r*1.005,r*1.005,0.05,new THREE.MeshStandardMaterial({color:0x2f6fb0,roughness:0.5}),28);
+  band.position.y = legH+h*0.52; g.add(band);
+
+  const vent = airVent(); vent.position.set(r*0.45,legH+h+0.005,r*0.30); g.add(vent);
+  const drain = ballValve(MAT.handleRed); drain.rotation.y=Math.PI/2; drain.position.set(r+0.02,legH+0.02,0); drain.rotation.z=Math.PI/2; g.add(drain);
+
+  const topStub = cyl(0.02,0.02,0.05,MAT.steelDark,10); topStub.position.set(0,legH+h+0.02,0); g.add(topStub);
+  const botStub = cyl(0.02,0.02,0.05,MAT.steelDark,10); botStub.position.set(0,legH-0.02,0); g.add(botStub);
+
+  registerEquip(g, Object.assign({labelPos:origin.clone().add(V3(0,legH+h+0.22,0)), borderColor:'rgba(111,176,240,.5)'}, tagInfo));
+
+  return { group:g, bandTop, bandBot, ports:{
+    top: origin.clone().add(V3(0,legH+h+0.045,0)),
+    bottom: origin.clone().add(V3(0,legH-0.045,0))
+  }};
+}
+
+// -- 11.7 Expansion vessel VEX-01 / SV-01 -------------------------------
+function buildVex(origin){
+  const g = new THREE.Group(); g.position.copy(origin);
+  const r=0.10,h=0.24,legH=0.55;
+  const stem = cyl(0.016,0.016,legH,MAT.steelDark,10); stem.position.y=legH/2; g.add(stem);
+  const body = cyl(r,r,h,MAT.gaugeBody,20); body.position.y=legH+h/2; g.add(body);
+  const dome = sph(r,new THREE.MeshStandardMaterial({color:0xb23a2f, metalness:0.3, roughness:0.4}),16,12); dome.scale.y=0.6; dome.position.y=legH+h+0.02; g.add(dome);
+  const botDome = sph(r,MAT.gaugeBody,16,12); botDome.scale.y=0.6; botDome.rotation.x=Math.PI; botDome.position.y=legH; g.add(botDome);
+  registerEquip(g, {
+    tag:'VEX-01', alt:'VEX-401', name:'Vas de expansiune — circuit încălzire',
+    desc:'Compensează dilatarea termică a apei din circuitul primar de încălzire (55/45°C, urcat temporar la 65 °C la încărcarea ACM).',
+    specs:[['Circuit','apă încălzire 45–65 °C']],
+    labelPos: origin.clone().add(V3(0,legH+h+0.22,0)), borderColor:'rgba(111,176,240,.5)'
+  });
+  return { group:g, ports:{ in: origin.clone().add(V3(0,0,0)) } };
+}
+function buildSafety(origin){
+  const g = new THREE.Group(); g.position.copy(origin);
+  const body = cyl(0.022,0.022,0.08,MAT.brass,12); body.position.y=0.04; g.add(body);
+  const top = cyl(0.026,0.018,0.03,MAT.brass.clone(),12); top.position.y=0.095; g.add(top);
+  // discharge stub: points down toward the drain line, so the valve reads
+  // as "vents to a drain when it opens" rather than a dead end in mid-air.
+  const dischargeLocal = V3(0,-0.06,0.02);
+  const outlet = cylBetween(V3(0,0.0,0), dischargeLocal, 0.011, MAT.steelDark, 8);
+  if(outlet) g.add(outlet);
+  g.userData.indicator = top;
+  registerEquip(g, {
+    tag:'SV-01', alt:'SV-401', name:'Supapă de siguranță 3 bar',
+    desc:'Protejează circuitul de încălzire la suprapresiune. Închisă în funcționare normală — deschide doar la 3 bar și evacuează spre pâlnia de golire de mai jos; nu face parte din bucla activă de curgere.',
+    specs:[['Presiune deschidere','3 bar'],['DN','15']],
+    trend:[{key:'apaIncTur', label:'T° circuit supravegheat', unit:'°C', fluid:'apa'}],
+    labelPos: origin.clone().add(V3(0,0.24,0)), borderColor:'rgba(224,120,47,.5)'
+  });
+  return { group:g, ports:{ in: origin.clone().add(V3(0,0,0)), discharge: origin.clone().add(dischargeLocal) } };
+}
+
+function buildDrainFunnel(origin, tag, desc){
+  const g = new THREE.Group(); g.position.copy(origin);
+  const funnel = cyl(0.05,0.018,0.05,MAT.steelDark,16); funnel.position.y=0.025; g.add(funnel);
+  const pipe = cyl(0.014,0.014,0.10,MAT.steelDark,10); pipe.position.y=-0.05; g.add(pipe);
+  registerEquip(g, {
+    tag:tag||'D-01', name:'Pâlnie de golire / evacuare',
+    desc:desc||'Punct de evacuare spre canalizare — primește descărcarea supapelor de siguranță și golirile de întreținere. Nu curge nimic aici în funcționare normală.',
+    labelPos: origin.clone().add(V3(0,0.16,0)), borderColor:'rgba(154,167,181,.4)'
+  });
+  return { group:g, ports:{ in: origin.clone().add(V3(0,0.045,0)) } };
+}
+
+// External connection point (well / borehole / ground loop) — makes it
+// visually obvious that the source-water IN/OUT stubs leave the skid
+// entirely, rather than looping back to nothing near the pump.
+function buildExternalSource(origin){
+  const g = new THREE.Group(); g.position.copy(origin);
+  const cap = cyl(0.14,0.14,0.03,MAT.frameDark,24); cap.position.y=0.015; g.add(cap);
+  const rim = cyl(0.145,0.145,0.008,MAT.steelDark,24); rim.position.y=0.032; g.add(rim);
+  for(let i=0;i<3;i++){
+    const bolt = cyl(0.008,0.008,0.01,MAT.steelDark,8);
+    const a = i*(Math.PI*2/3);
+    bolt.position.set(Math.cos(a)*0.11, 0.037, Math.sin(a)*0.11); g.add(bolt);
+  }
+  const shaft = cyl(0.05,0.05,0.5,MAT.frameDark,16); shaft.position.y=-0.25; g.add(shaft);
+  registerEquip(g, {
+    tag:'SURSĂ-EXT', name:'Racord sursă de apă externă',
+    desc:'Punctul unde circuitul de apă sursă (5/0°C) părăsește macheta — spre puț, foraj sau buclă geotermală externă, aflată în afara utilajului. Apa IN și apa RETUR merg amândouă aici, nu una spre alta: e o buclă închisă doar cu sursa externă, complet separată de rezervoarele de încălzire.',
+    specs:[['Debit','2,7–2,8 m³/h'],['DN','25']],
+    labelPos: origin.clone().add(V3(0,0.22,0)), borderColor:'rgba(111,176,240,.5)'
+  });
+  return { group:g, ports:{ top: origin.clone().add(V3(0,0.032,0)) } };
+}
+
+// Make-up water valve for the SEALED heating loop (gas cooler <-> tanks
+// <-> consumers). Not named in the source documentation (only the drain
+// valves D-01/D-02 and VT301-303 are) — added for completeness: every
+// real sealed circuit needs a one-time fill / occasional top-up point,
+// normally closed, tied here to the primary return near VEX-01.
+function buildFillValve(origin){
+  const g = new THREE.Group(); g.position.copy(origin);
+  const v = ballValve(MAT.handleRed); g.add(v);
+  const check = cyl(0.016,0.016,0.03,MAT.brass,10); check.rotation.z=Math.PI/2; check.position.set(-0.06,0,0); g.add(check);
+  const cap = cyl(0.018,0.018,0.012,MAT.steelDark,10); cap.rotation.z=Math.PI/2; cap.position.set(-0.09,0,0); g.add(cap);
+  registerEquip(g, {
+    tag:'V-UMPLERE', name:'Robinet umplere / adaos apă (circuit sigilat)',
+    desc:'Nu apare explicit în documentația sursă — adăugat pentru completitudine: orice circuit sigilat (gaz-cooler ↔ rezervoare ↔ consumatori) are nevoie de un punct de umplere inițială și completare ocazională, racordat la apă potabilă/utilitară. Normal închis; nu circulă apă prin el în funcționare curentă. Verifică poziția reală față de proiect.',
+    specs:[['Stare normală','închis'],['Rol','umplere inițială + completare presiune']],
+    labelPos: origin.clone().add(V3(0,0.14,0)), borderColor:'rgba(154,167,181,.4)'
+  });
+  return { group:g, ports:{ in: origin.clone().add(V3(-0.11,0,0)), out: origin.clone().add(V3(0.06,0,0)) } };
+}
+
+// -- 11.8 CO2 charge cylinders (auxiliary, decorative) -------------------
+function buildCO2Bottles(origin){
+  const g = new THREE.Group(); g.position.copy(origin);
+  [0,0.24].forEach((dx,i)=>{
+    const h=0.85,r=0.075;
+    const body = cyl(r,r,h,MAT.gasCyl,18); body.position.set(dx,h/2,0); g.add(body);
+    const dome = sph(r,MAT.gasCyl,16,10); dome.scale.y=0.6; dome.position.set(dx,h,0); g.add(dome);
+    const cap = cyl(0.02,0.03,0.05,MAT.gasCylCap,12); cap.position.set(dx,h+0.045,0); g.add(cap);
+    const valve = cyl(0.012,0.012,0.05,MAT.steelDark,8); valve.position.set(dx,h+0.09,0); g.add(valve);
+  });
+  registerEquip(g, {
+    tag:'Butelii CO₂', name:'Rezervă / încărcare CO₂ (auxiliar)',
+    desc:'Butelii de dioxid de carbon pentru încărcarea inițială și completarea agentului frigorific R744. Nu fac parte din bucla activă de refrigerare — conectate doar prin racord de service.',
+    specs:[['Rol','încărcare / service'],['Fluid','CO₂ (R744) lichid']],
+    labelPos: origin.clone().add(V3(0.12,1.05,0)), borderColor:'rgba(224,120,47,.4)'
+  });
+  return { group:g };
+}
+
+// -- 11.9 Electrical / PLC panel -----------------------------------------
+function buildPanel(origin){
+  const g = new THREE.Group(); g.position.copy(origin);
+  const cab = box(0.5,0.85,0.16,MAT.panelBody); cab.position.set(0,0.425,0); g.add(cab);
+  const door = box(0.44,0.78,0.02,MAT.panelDoor); door.position.set(0,0.425,0.09); g.add(door);
+  for(let r=0;r<3;r++) for(let c=0;c<2;c++){
+    const led = sph(0.006, r===0?MAT.glowGreen:MAT.glowAmber,8);
+    led.position.set(-0.15+c*0.08, 0.62-r*0.05, 0.101); g.add(led);
+  }
+  const plate = box(0.3,0.05,0.002, new THREE.MeshStandardMaterial({color:0xe7e4d8}));
+  plate.position.set(0,0.2,0.101); g.add(plate);
+  registerEquip(g, {
+    tag:'TE-01', name:'Tablou electric + PLC',
+    desc:'Tablou de forță și automatizare pentru compresor, pompe și instrumentație. Controler programabil (PLC WAGO PFC200 / SPLC-64) și module RS-485 pentru senzorii de temperatură și presiune.',
+    specs:[['Alimentare','400 V, 3~ / 230 V'],['Comunicație','RS-485 Modbus']],
+    labelPos: origin.clone().add(V3(0,0.98,0)), borderColor:'rgba(154,167,181,.5)'
+  });
+}
+
+// -- 11.10b ACM (domestic hot water) utility connections ------------------
+// Sizing (boiler volume, HX power, pump) is still TBD — pending real
+// shower flow/duration numbers — so these are placeholder dimensions,
+// clearly flagged in each info card. Layout/plumbing logic is final.
+function buildColdInlet(origin){
+  const g = new THREE.Group(); g.position.copy(origin);
+  const cap = cyl(0.10,0.10,0.025,MAT.frameDark,20); cap.position.y=0.012; g.add(cap);
+  const rim = cyl(0.105,0.105,0.006,MAT.steelDark,20); rim.position.y=0.026; g.add(rim);
+  const shaft = cyl(0.035,0.035,0.4,MAT.frameDark,14); shaft.position.y=-0.2; g.add(shaft);
+  registerEquip(g, {
+    tag:'APĂ RECE', name:'Racord apă rece potabilă (rețea)',
+    desc:'Intrarea de apă rece potabilă din rețeaua clădirii — alimentează baza boilerului T-ACM pe măsură ce se consumă apă caldă. Presiune de rețea, circuit deschis — nu se amestecă niciodată cu apa din bucla sigilată de încălzire.',
+    specs:[['Fluid','apă potabilă'],['Presiune','presiune rețea (deschis)']],
+    labelPos: origin.clone().add(V3(0,0.18,0)), borderColor:'rgba(111,176,240,.5)'
+  });
+  return { group:g, ports:{ top: origin.clone().add(V3(0,0.026,0)) } };
+}
+
+function buildAcmDist(origin){
+  const g = new THREE.Group(); g.position.copy(origin);
+  const baseY=0.5;
+  const header = box(0.045,0.24,0.045,MAT.steel); header.position.set(0,baseY,0); g.add(header);
+  const mixBody = cyl(0.026,0.026,0.07,MAT.brass,14); mixBody.rotation.z=Math.PI/2; mixBody.position.set(0.10,baseY+0.03,0); g.add(mixBody);
+  [0,1,2].forEach(i=>{
+    const tap = cyl(0.010,0.010,0.11,MAT.steelDark,10);
+    tap.rotation.x = Math.PI/2.3;
+    tap.position.set(0.17+i*0.08, baseY-0.10, 0.05);
+    g.add(tap);
+  });
+  registerEquip(g, {
+    tag:'DIST-ACM', name:'Distribuție ACM → 3 dușuri + 2 chiuvete',
+    desc:'Colector de apă caldă menajeră către punctele de consum din vestiar, cu vană de amestec termostatică (protecție opărire) chiar la ieșirea din colector. Volumul boilerului și puterea schimbătorului sunt încă de dimensionat — vezi fișa T-ACM.',
+    specs:[['Puncte consum','3 dușuri + 2 chiuvete'],['Livrare','~40 °C (amestec)']],
+    trend:[{key:'acmTemp', label:'T° boiler ACM', unit:'°C', fluid:'apa'}],
+    labelPos: origin.clone().add(V3(0.12,baseY+0.20,0)), borderColor:'rgba(111,176,240,.5)'
+  });
+  return { group:g, ports:{ hotIn: origin.clone().add(V3(0,baseY+0.10,0)) } };
+}
+
+// -- 11.10 Consumer manifold ----------------------------------------------
+function buildManifold(origin){
+  const g = new THREE.Group(); g.position.copy(origin);
+  const baseY=0.55;
+  const header = box(0.05,0.28,0.05,MAT.steel); header.position.set(0,baseY,0); g.add(header);
+  const out1 = cyl(0.018,0.018,0.10,MAT.steelDark,10); out1.rotation.z=Math.PI/2; out1.position.set(0.07,baseY+0.08,0); g.add(out1);
+  const out2 = cyl(0.018,0.018,0.10,MAT.steelDark,10); out2.rotation.z=Math.PI/2; out2.position.set(0.07,baseY-0.08,0); g.add(out2);
+  // simple radiator prop just beyond the manifold, purely to close the loop visually
+  const rad = box(0.05,0.32,0.28, new THREE.MeshStandardMaterial({color:0xcfd3d6, metalness:0.3, roughness:0.5}));
+  rad.position.set(0.30,baseY,0); g.add(rad);
+  for(let i=0;i<8;i++){
+    const fin = box(0.002,0.30,0.26, new THREE.MeshStandardMaterial({color:0xb9bec2, metalness:0.3, roughness:0.5}));
+    fin.position.set(0.28+i*0.006, baseY,0); g.add(fin);
+  }
+  registerEquip(g, {
+    tag:'DIST-01', name:'Distribuție consumatori (radiatoare / IPAT)',
+    desc:'Colector de tur/retur către circuitele de încălzire ale clădirii. Opțional: vană de amestec cu 3 căi dacă există circuite de temperatură joasă.',
+    specs:[['Regim','55 / 45 °C']],
+    trend:[{key:'apaConsTur', label:'T° tur', unit:'°C', fluid:'apa'}, {key:'apaConsRetur', label:'T° retur', unit:'°C', fluid:'apa'}],
+    labelPos: origin.clone().add(V3(0.1,baseY+0.22,0)), borderColor:'rgba(111,176,240,.5)'
+  });
+  return { group:g, ports:{
+    tur:   origin.clone().add(V3(0,baseY+0.13,0)),
+    retur: origin.clone().add(V3(0,baseY-0.13,0))
+  }};
+}
+
+/* ---------------------------------------------------------------------
+   12. ASSEMBLE EQUIPMENT
+--------------------------------------------------------------------- */
+const eqComp   = buildCompressor(POS.comp);
+const eqEvap   = buildBPHE(POS.evap, {co2Top:true, info:{
+  tag:'E-301', alt:'E-102', name:'Evaporator apă → CO₂',
+  short:'plăci brazate inox (BPHE)',
+  desc:'Apa de sursă cedează căldură agentului CO₂, care fierbe/se evaporă la presiune joasă (LP, sub pragul critic — regim subcritic, evaporare reală, ca la un frigider clasic). Apa iese răcită spre retur sursă.',
+  specs:[['Putere','14–16 kW'],['Regim apă','5 → 0 °C'],['ΔT apă','≈ 5 K'],['Presiune apă min.','10 bar'],['Regim CO₂','subcritic (bifazic)']],
+  trend:[{key:'apaSrcIn', label:'T° apă IN', unit:'°C', fluid:'apa'}, {key:'apaSrcOut', label:'T° apă OUT', unit:'°C', fluid:'apa'}]
+}});
+const eqEEV    = buildEEV(POS.eev);
+const eqGasC   = buildBPHE(POS.gascooler, {co2Top:true, info:{
+  tag:'HX-301', alt:'E-101', name:'Gas cooler CO₂ → apă',
+  short:'plăci brazate inox (BPHE)',
+  desc:'CO₂ la presiune înaltă (HP) cedează căldură apei de încălzire, adusă de la 45 la 55 °C în regim de încălzire (setpoint urcat la 65 °C doar cât se încarcă boilerele ACM). Se numește „gas cooler", nu condensator: peste 73,8 bar / 31,1°C (pragul critic al CO₂), agentul e supracritic — se răcește, dar nu condensează, nu există fază lichidă separată aici.',
+  specs:[['Putere','14–16 kW'],['Regim apă','45 → 55 °C (65 °C la ACM)'],['Presiune CO₂ min.','120 bar'],['Presiune apă min.','10 bar'],['Regim CO₂','supracritic']],
+  trend:[{key:'apaIncRetur', label:'T° apă intrare', unit:'°C', fluid:'apa'}, {key:'apaIncTur', label:'T° apă ieșire', unit:'°C', fluid:'apa'}]
+}});
+const eqFilter = buildYFilter(POS.filterSrc);
+const eqExtSource = buildExternalSource(POS.filterSrc.clone().add(V3(-0.62, -0.05, 0.42)));
+const eqPumpSrc = buildPump(POS.pumpSrc, {
+  tag:'P-301', alt:'P-201', name:'Pompă circulație — apă sursă',
+  desc:'Asigură debitul de apă rece prin evaporatorul E-301.',
+  specs:[['Debit','2,7–2,8 m³/h'],['Presiune (H)','4–6 mCA'],['DN linie','DN25'],['Viteză apă','0,8–1,1 m/s']]
+});
+const eqPumpPrim = buildPump(POS.pumpPrim, {
+  tag:'P-302', alt:'P-202', name:'Pompă circulație — încălzire primar',
+  desc:'Circulă apa prin gas cooler și lanțul de rezervoare T-301 → T-302 → T-303.',
+  specs:[['Debit','1,3–1,4 m³/h'],['Presiune (H)','3–5 mCA'],['DN linie','DN20'],['Viteză apă','0,7–1,0 m/s']]
+});
+const eqPumpSec = buildPump(POS.pumpSec, {
+  tag:'P-303', alt:'P-203', name:'Pompă circulație — consumatori (secundar)',
+  desc:'Alimentează consumatorii (radiatoare / ventiloconvectoare) din partea superioară a T-303.',
+  specs:[['Debit','1,3–1,4 m³/h'],['Presiune (H)','4–6 mCA'],['DN linie','DN20'],['Viteză apă','0,7–1,0 m/s']]
+});
+// SINGLE buffer tank for space heating (was 3×200L in series in the
+// original — oversized for this project). At ~2-5 kW for 2 birouri (9mp
+// fiecare) + 1 vestiar (18mp) = 36mp, the 40 l/kW rule gives ~150-200L,
+// and one small/mid room count doesn't create enough flow variability to
+// need 3-stage decoupling — one tank does the decouple+inertia+delivery
+// job together. Exact volume still TBD; placeholder size kept for now.
+const eqTankA = buildTank(POS.tankA, {tag:'T-CAL01', alt:'T-301 (schemă originală)', name:'Rezervor tampon — circuit calorifere',
+  desc:'Singurul rezervor necesar pentru încălzirea celor 3 camere (2 birouri 9mp + vestiar 18mp, ~2-5 kW în regim 55/45). Proiectul original avea 3×200L în serie, dimensionate pentru 14-16 kW — la această scară, un singur vas face decuplarea hidraulică, inerția și stabilizarea livrării deodată. Rămâne la 200 l (nu mai mic) tocmai ca să aibă rezervă: cât timp toată puterea merge la încărcarea boilerelor ACM, el ține caloriferele ~90 min fără aport de la compresor.',
+  specs:[['Volum','200 l'],['Rol','decuplare + inerție + rezervă la prioritate ACM'],['Temp. sus / jos','≈55 / ≈45 °C'],['Autonomie fără compresor','≈90 min la 3 kW']],
+  trend:[{key:'tA_top', label:'T° sus', unit:'°C', fluid:'apa'}, {key:'tA_bot', label:'T° jos', unit:'°C', fluid:'apa'}]});
+
+/* ACM (apă caldă menajeră) sub-system — schimbător dedicat + boiler,
+   racordate pe rezervorul de calorifere (nu pe circuitul CO₂ direct),
+   exact cum am discutat: o buclă separată, cu schimb doar de căldură. */
+const eqPumpAcm = buildPump(POS.pumpAcm, {
+  tag:'P-ACM', name:'Pompă încărcare ACM (parte potabilă)',
+  desc:'Trage apă rece din fundul lui T-ACM1 și o trimite prin gas cooler-ul HX-302, de unde se întoarce fierbinte în vârful lui T-ACM2. ATENȚIE: fiind pe circuitul de apă potabilă, trebuie pompă sanitară (bronz/inox), nu una de încălzire cu carcasă de fontă. Turația se modulează ca să nimerească ținta de 60 °C la ieșirea din HX-302. Pornește sub 55 °C în boiler, se oprește la 60 °C.',
+  specs:[['Fluid','apă potabilă'],['Material','bronz / inox (sanitar)'],['Reglaj','turație modulată pe T° ieșire'],['Debit','de dimensionat']]
+}, true);
+/* VARIANTA B — al doilea gas cooler, direct pe CO₂.
+   CO₂-ul intră aici la ~100 °C (direct de la compresor) și iese mult mai
+   rece, pentru că îl întâmpină apă de rețea la ~12 °C. De asta câștigi
+   COP: cu cât iese CO₂-ul mai rece din gas cooler, cu atât fiecare kg de
+   agent transportă mai multă căldură — vezi fișa lui V-301 pentru ce se
+   întâmplă mai departe. */
+const eqHx302 = buildBPHE(POS.hx302, {co2Top:true, info:{
+  tag:'HX-302', name:'Gas cooler CO₂ → ACM (varianta B)',
+  short:'BPHE perete dublu, CO₂/potabilă',
+  desc:'Al doilea gas cooler, montat direct pe circuitul de CO₂, primul după compresor. Încălzește apa menajeră într-o singură trecere, de la ~12 °C (rețea) la 60 °C — exact principiul pompelor CO₂ pentru ACM. Fiind alimentat cu apă rece, răcește CO₂-ul mult mai jos decât o poate face bucla de calorifere (retur 45 °C), ceea ce ridică COP-ul de la ~2,8 la ~4 pe partea de ACM (≈2000 kWh/an economie).',
+  specs:[['Putere','de dimensionat'],['CO₂','HP, 80–95 bar, intrare ~100 °C'],['Apă','12 → 60 °C, o singură trecere'],['Cerință obligatorie','perete dublu (CO₂ / apă potabilă)'],['Poziție pe CO₂','primul după compresor']]
+}});
+/* 3 × 200 l în SERIE. Motivul seriei (nu paralel): menține stratificarea
+   — apa rece de rețea stă în T-ACM1, cea fierbinte în T-ACM3, iar frontul
+   termic se deplasează ca un „dop". Așa folosești aproape tot volumul la
+   temperatură plină (la un singur vas mare, amestecarea îți ia 10-15%),
+   iar bucla de încărcare poate trage apă cu adevărat rece din fundul lui
+   T-ACM1 — exact ce are nevoie gas cooler-ul pentru COP bun. */
+const ACM_TANKS = [
+  {pos:POS.tAcm1, tag:'T-ACM1', rol:'primul din serie — primește apa rece de rețea în partea de jos; tot din fundul lui pleacă bucla de încărcare spre HX-302, ca gas cooler-ul să primească apa cea mai rece din instalație'},
+  {pos:POS.tAcm2, tag:'T-ACM2', rol:'al doilea din serie — aici se întoarce apa încălzită de la HX-302 (în vârf) și de aici pleacă livrarea spre dușuri'}
+];
+const eqTAcm = ACM_TANKS.map((t,i)=> buildTank(t.pos, {
+  tag:t.tag, name:'Boiler ACM '+(i+1)+'/2 — 300 l',
+  desc:'Boiler de apă caldă menajeră, '+t.rol+'. Vas ZVELT (Ø≈500 mm, H≈1,53 m, H/D 3,1) — forma contează mai mult decât numărul de vase: la același volum, un vas scund Ø600 amestecă mai mult și pierde ~30 l de capacitate utilă, suficient cât să nu mai acopere ultimul val de dușuri. Trebuie certificat pentru apă potabilă (emailat + anod de magneziu, sau inox) și pentru presiunea rețelei — NU un vas tampon de încălzire.',
+  specs:[['Volum','300 l'],['Ø × H manta','≈500 × 1530 mm (H/D 3,1)'],['Rol','stocare ACM (serie, poz. '+(i+1)+'/2)'],['Regim','≈60 °C'],['Cerință','certificat apă potabilă + anod'],['Anti-Legionella','ciclu zilnic ≥60 °C pe tot lanțul']],
+  trend:[{key:'acmTemp', label:'T° boiler', unit:'°C', fluid:'apa'}]},
+  {r:0.25, h:1.53}));
+const eqAcmSource = buildColdInlet(POS.acmSource);
+const eqAcmDist = buildAcmDist(POS.acmDist);
+const eqVex = buildVex(POS.vex);
+const eqSafety = buildSafety(POS.vex.clone().add(V3(0.25,1.15,0)));
+const eqDrain = buildDrainFunnel(POS.vex.clone().add(V3(0.25,0.35,0.10)), 'D-SV01', 'Golire pentru SV-01 — primește evacuarea supapei de siguranță dacă circuitul de încălzire depășește 3 bar.');
+const eqFillValve = buildFillValve(POS.vex.clone().add(V3(-0.24, 0.08, -0.06)));
+buildCO2Bottles(POS.co2bottles);
+buildPanel(POS.panel);
+const eqManifold = buildManifold(POS.manifold);
+
+/* small isolation valves + instruments scattered per documentation ----- */
+function placeValve(pos, rotY, handleMat, tagInfo){
+  const v = ballValve(handleMat); v.position.copy(pos); v.rotation.y = rotY||0;
+  gInstruments.add(v);
+  registerEquip(v, Object.assign({labelPos:pos.clone().add(V3(0,0.14,0)), borderColor:'rgba(154,167,181,.4)'}, tagInfo));
+}
+function placeGauge(pos, rotY, tagInfo){
+  const gg = gauge(); gg.position.copy(pos); gg.rotation.y = rotY||0;
+  gInstruments.add(gg);
+  registerEquip(gg, Object.assign({labelPos:pos.clone().add(V3(0,0.16,0)), borderColor:'rgba(154,167,181,.4)'}, tagInfo));
+  return gg;
+}
+function placeSensor(pos, tagInfo){
+  const s = thermowell(); s.position.copy(pos);
+  gInstruments.add(s);
+  registerEquip(s, Object.assign({labelPos:pos.clone().add(V3(0,0.11,0)), borderColor:'rgba(154,167,181,.4)'}, tagInfo));
+}
+
+placeValve(POS.filterSrc.clone().add(V3(-0.13,0.09,0)), Math.PI/2, MAT.handleBlue, {tag:'V301S', name:'Izolare sursă IN', desc:'Robinet de izolare pe intrarea circuitului de apă sursă.'});
+placeValve(eqEvap.ports.waterOut.clone().add(V3(0,0.05,0)), Math.PI/2, MAT.handleBlue, {tag:'V302S', name:'Izolare sursă OUT', desc:'Robinet de izolare pe ieșirea circuitului de apă sursă.'});
+placeGauge(POS.comp.clone().add(V3(0.28,0.30,0.12)), -0.4, {tag:'PT LP / PSL', name:'Presiune aspirație CO₂', desc:'Transmițător + presostat de joasă presiune pe linia de aspirație a compresorului.', specs:[['Domeniu afișaj','0–100 bar']], trend:[{key:'pt_lp', label:'PT-LP', unit:'bar', fluid:'co2'}]});
+placeGauge(POS.comp.clone().add(V3(-0.28,0.30,0.12)), 0.4, {tag:'PT HP / PSH', name:'Presiune refulare CO₂', desc:'Transmițător + presostat de înaltă presiune pe linia de refulare a compresorului.', specs:[['Domeniu afișaj','0–160 bar']], trend:[{key:'pt_hp', label:'PT-HP', unit:'bar', fluid:'co2'}]});
+placeSensor(eqComp.ports.discharge.clone().add(V3(0,0.02,0)), {tag:'TT CO₂ HP', name:'Temperatură refulare CO₂', desc:'Monitorizează temperatura gazului refulat de compresor (90–110 °C).'});
+placeSensor(eqComp.ports.suction.clone().add(V3(0,0.02,0)), {tag:'TT CO₂ LP', name:'Temperatură aspirație CO₂', desc:'Monitorizează temperatura vaporilor de CO₂ la intrarea în compresor.'});
+placeSensor(eqEvap.ports.waterIn.clone().add(V3(0,0,0.05)), {tag:'TT301S', name:'T° apă sursă IN', desc:'Temperatura apei de sursă la intrarea în evaporator (~5 °C).'});
+placeSensor(eqEvap.ports.waterOut.clone().add(V3(0,0,0.05)), {tag:'TT302S', name:'T° apă sursă OUT', desc:'Temperatura apei de sursă la ieșirea din evaporator (~0 °C).'});
+placeSensor(eqPumpSrc.ports.out.clone().add(V3(0,0.06,0)), {tag:'FS301', name:'Debitmetru / contact debit — sursă', desc:'Confirmă debitul minim de apă sursă; interblocare pornire PDC.'});
+placeSensor(eqGasC.ports.waterIn.clone().add(V3(0,0,0.05)), {tag:'TT401', name:'T° retur încălzire', desc:'Temperatura apei de încălzire înainte de gas cooler (~45 °C).'});
+placeSensor(eqGasC.ports.waterOut.clone().add(V3(0,0,0.05)), {tag:'TT402', name:'T° după HX-301', desc:'Temperatura apei imediat după gas cooler (~55 °C în încălzire, ~65 °C la încărcarea ACM).'});
+placeValve(eqGasC.ports.waterIn.clone().add(V3(0,-0.06,0)), Math.PI/2, MAT.handleBlue, {tag:'V401H', name:'Izolare retur încălzire'});
+placeValve(eqGasC.ports.waterOut.clone().add(V3(0,0.06,0)), Math.PI/2, MAT.handleBlue, {tag:'V402H', name:'Izolare refulare încălzire'});
+placeSensor(eqManifold.ports.tur.clone().add(V3(0,0.03,0)), {tag:'TT501', name:'T° tur instalație', desc:'Temperatura apei livrate caloriferelor (~55 °C). Control pornire P-303.'});
+placeValve(eqManifold.ports.tur.clone().add(V3(-0.06,0,0)), Math.PI/2, MAT.handleBlue, {tag:'V501H', name:'Izolare tur instalație'});
+placeSensor(eqTankA.ports.top.clone().add(V3(0.09,0.01,0.08)), {tag:'TT-CAL01', name:'T° rezervor final (livrare)', desc:'Temperatura de livrare a turului către cele 3 camere — referință pentru control.'});
+placeValve(eqTankA.ports.bottom.clone().add(V3(0.09,0.01,-0.08)), 0, MAT.handleBlue, {tag:'VT-CAL01', name:'Izolare rezervor T-CAL01'});
+placeSensor(eqTAcm[1].ports.top.clone().add(V3(-0.05,0.01,0.08)), {tag:'TT-ACM', name:'T° livrare ACM (T-ACM2)', desc:'Temperatura apei calde la punctul de livrare — sub 55 °C pornește reîncărcarea (prioritate ACM), la 60 °C se oprește. Tot ea declanșează ciclul zilnic anti-Legionella.'});
+placeSensor(eqTAcm[0].ports.bottom.clone().add(V3(0.06,0.03,0.10)), {tag:'TT-ACM-JOS', name:'T° bază lanț ACM (T-ACM1)', desc:'Temperatura din fundul lanțului — confirmă că apa trimisă spre HX-302 e cu adevărat rece. Asta e chiar condiția de care depinde câștigul de COP al variantei B: cu cât intră mai rece, cu atât iese CO₂-ul mai rece din gas cooler.'});
+eqTAcm.forEach((tk,i)=> placeValve(tk.ports.bottom.clone().add(V3(-0.09,0.01,0.10)), 0, MAT.handleBlue, {tag:'VT-ACM'+(i+1), name:'Izolare / golire boiler ACM '+(i+1)}));
+
+/* ---------------------------------------------------------------------
+   13. PIPE ENGINE
+--------------------------------------------------------------------- */
+const pipeRegistry = [];
+const DN_R = { 12:0.017, 15:0.019, 16:0.021, 20:0.026, 25:0.031 };
+function dnR(dn){ return DN_R[dn] || 0.022; }
+const DN_VEL = { co2:{12:0.5, 16:4.0}, apa:{15:0.6, 20:0.85, 25:1.0} };
+// Real DN (mm) behind each drawn radius — the model exaggerates pipe
+// diameter ~2.4x for legibility, so the fabrication table below always
+// quotes the REAL DN, never the drawn one.
+const DN_REAL = { 12:'DN12 (Ø15 Cu)', 15:'DN15 (Ø18)', 16:'DN16 (Ø18 Cu)', 20:'DN20 (Ø22)', 25:'DN25 (Ø28)' };
+
+function pathLen(pts){
+  let L=0; for(let i=0;i<pts.length-1;i++) L += pts[i].distanceTo(pts[i+1]);
+  return L;
+}
+function pathPointAt(pts, t){
+  const total = pathLen(pts);
+  let target = total*t, acc=0;
+  for(let i=0;i<pts.length-1;i++){
+    const segLen = pts[i].distanceTo(pts[i+1]);
+    if(acc+segLen >= target || i===pts.length-2){
+      const localT = segLen<1e-6?0:(target-acc)/segLen;
+      return new THREE.Vector3().lerpVectors(pts[i], pts[i+1], THREE.MathUtils.clamp(localT,0,1));
+    }
+    acc += segLen;
+  }
+  return pts[pts.length-1].clone();
+}
+function pathDirAt(pts, t){
+  const total = pathLen(pts);
+  let target = total*t, acc=0;
+  for(let i=0;i<pts.length-1;i++){
+    const segLen = pts[i].distanceTo(pts[i+1]);
+    if(acc+segLen >= target || i===pts.length-2){
+      return new THREE.Vector3().subVectors(pts[i+1],pts[i]).normalize();
+    }
+    acc += segLen;
+  }
+  return V3(1,0,0);
+}
+
+// Generic rack routing: step away from each port along its own safe "out"
+// direction (clear of its equipment's body), rise/drop onto a shared
+// horizontal shelf, travel X then Z on that shelf, then arrive the same
+// way in reverse. Every run gets a *unique* shelf height (see SHELF), so
+// two different pipes can never occupy the same plane — the only way two
+// tubes could still touch is by design (a real tee), never by accident.
+function rackRoute(p1, out1, p2, out2, shelfY){
+  const a = p1.clone().add(out1);
+  const b = p2.clone().add(out2);
+  const a2 = V3(a.x, shelfY, a.z);
+  const b2 = V3(b.x, shelfY, b.z);
+  const mid = V3(b2.x, shelfY, a2.z);
+  const pts = [p1.clone(), a, a2, mid, b2, b, p2.clone()];
+  return pts.filter((p,i)=> i===0 || p.distanceTo(pts[i-1])>1e-4);
+}
+
+/* --- SWEPT ELBOWS -----------------------------------------------------
+   A sharp 90° corner cannot be fabricated: real pipework turns on an
+   elbow with a centreline radius (long-radius ≈ 1.5×D). buildBends()
+   replaces every interior vertex of a route with the exact circular arc
+   tangent to both legs, so what the model shows is what a fitter can
+   actually build — and the quoted pipe length is the true centreline
+   length, not the sharp-corner approximation.
+   Returns {segs:[{a,b}], arcs:[{pts,R,angle}], dense:[...], len} */
+function buildBends(pts, bendR){
+  const segs=[], arcs=[], dense=[pts[0].clone()];
+  let cursor = pts[0].clone();
+  for(let i=1;i<pts.length-1;i++){
+    const A=pts[i-1], B=pts[i], C=pts[i+1];
+    const v1 = new THREE.Vector3().subVectors(A,B); const L1=v1.length(); v1.normalize();
+    const v2 = new THREE.Vector3().subVectors(C,B); const L2=v2.length(); v2.normalize();
+    const phi = Math.acos(THREE.MathUtils.clamp(v1.dot(v2),-1,1)); // included angle
+    if(phi > Math.PI-0.02 || phi < 0.02 || L1<1e-4 || L2<1e-4) continue; // straight-through
+    let t = bendR / Math.tan(phi/2);
+    const maxT = Math.min(L1,L2)*0.45;
+    if(t > maxT) t = maxT;
+    const R = t * Math.tan(phi/2);
+    const S = B.clone().addScaledVector(v1, t);
+    const E = B.clone().addScaledVector(v2, t);
+    const O = B.clone().addScaledVector(v1.clone().add(v2).normalize(), R/Math.sin(phi/2));
+    const rS = new THREE.Vector3().subVectors(S,O);
+    const rE = new THREE.Vector3().subVectors(E,O);
+    const qEnd = new THREE.Quaternion().setFromUnitVectors(rS.clone().normalize(), rE.clone().normalize());
+    const arcPts=[]; const n=8;
+    for(let k=0;k<=n;k++){
+      const q = new THREE.Quaternion().slerp(qEnd, k/n);
+      arcPts.push(rS.clone().applyQuaternion(q).add(O));
+    }
+    if(cursor.distanceTo(S) > 1e-4) segs.push({a:cursor.clone(), b:S.clone()});
+    arcs.push({pts:arcPts, R:R, angle:Math.PI-phi});
+    arcPts.forEach((p,k)=>{ if(k>0 || dense.length===0) dense.push(p.clone()); });
+    cursor = E.clone();
+  }
+  const last = pts[pts.length-1];
+  if(cursor.distanceTo(last) > 1e-4) segs.push({a:cursor.clone(), b:last.clone()});
+  dense.push(last.clone());
+  const denseClean = dense.filter((p,i)=> i===0 || p.distanceTo(dense[i-1])>1e-5);
+  return {segs, arcs, dense:denseClean, len:pathLen(denseClean)};
+}
+
+/* A visible union/fitting at every equipment connection, so each joint in
+   the model corresponds to a real, orderable part. */
+function connectionFitting(pos, radius, dir){
+  const g = new THREE.Group();
+  const collar = cyl(radius*1.45, radius*1.45, radius*1.1, MAT.flange, 16);
+  const nut    = cyl(radius*1.70, radius*1.70, radius*0.7, MAT.steelDark, 6);
+  nut.position.y = radius*0.95;
+  g.add(collar); g.add(nut);
+  g.position.copy(pos);
+  if(dir && dir.lengthSq()>0.25){
+    g.quaternion.setFromUnitVectors(V3(0,1,0), dir.clone().normalize());
+  }
+  return g;
+}
+
+/* A real tee body where one run branches off another. */
+function teeFitting(pos, radius, runDir, branchDir){
+  const g = new THREE.Group(); g.position.copy(pos);
+  const body = cyl(radius*1.35, radius*1.35, radius*3.2, MAT.flange, 14);
+  if(runDir && runDir.lengthSq()>0.25) body.quaternion.setFromUnitVectors(V3(0,1,0), runDir.clone().normalize());
+  g.add(body);
+  const neck = cyl(radius*1.2, radius*1.2, radius*2.2, MAT.flange, 14);
+  if(branchDir && branchDir.lengthSq()>0.25){
+    neck.quaternion.setFromUnitVectors(V3(0,1,0), branchDir.clone().normalize());
+    neck.position.copy(branchDir.clone().normalize().multiplyScalar(radius*1.1));
+  }
+  g.add(neck);
+  return g;
+}
+
+const pipeArrows = [];
+function addPipe(cfg){
+  // cfg: {group, fluid, dn, points, getTemp, label, labelT, velocity, from, to}
+  const radius = dnR(cfg.dn);
+  const bendR  = cfg.bendR || radius*2.6;          // ≈ long-radius elbow
+  const mat = new THREE.MeshStandardMaterial({color: cfg.fixedColor!==undefined?cfg.fixedColor:0xffffff, metalness:0.4, roughness:0.4, emissive:0x000000});
+  const bent = buildBends(cfg.points, bendR);
+  const pts = bent.dense;                           // true centreline
+
+  bent.segs.forEach(s=>{
+    const m = cylBetween(s.a, s.b, radius, mat, 14);
+    if(m) cfg.group.add(m);
+  });
+  bent.arcs.forEach(a=>{
+    const curve = new THREE.CatmullRomCurve3(a.pts, false, 'centripetal');
+    const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 10, radius, 14, false), mat);
+    tube.castShadow = true; tube.receiveShadow = true;
+    cfg.group.add(tube);
+  });
+
+  // real union fittings at both ends, aligned with the pipe axis
+  const dStart = new THREE.Vector3().subVectors(pts[1]||pts[0], pts[0]);
+  const dEnd   = new THREE.Vector3().subVectors(pts[pts.length-1], pts[pts.length-2]||pts[pts.length-1]);
+  cfg.group.add(connectionFitting(pts[0], radius, dStart));
+  cfg.group.add(connectionFitting(pts[pts.length-1], radius, dEnd));
+
+  // static direction arrows — always visible with the pipe, independent of
+  // the flow-particle animation, so the route reads at a glance.
+  const arrowMat = new THREE.MeshStandardMaterial({color:0xffffff, emissive:0x000000, metalness:0.2, roughness:0.35});
+  [0.28, 0.72].forEach(ft=>{
+    const dir = pathDirAt(pts, ft);
+    if(dir.lengthSq()<0.5) return;
+    const arrow = new THREE.Mesh(new THREE.ConeGeometry(radius*1.9, radius*4.2, 12), arrowMat);
+    arrow.position.copy(pathPointAt(pts, ft));
+    arrow.quaternion.setFromUnitVectors(V3(0,1,0), dir);
+    arrow.castShadow = true;
+    cfg.group.add(arrow);
+    pipeArrows.push(arrow);
+  });
+
+  const velocity = cfg.velocity || (DN_VEL[cfg.fluid] && DN_VEL[cfg.fluid][cfg.dn]) || 0.7;
+  const entry = {
+    fluid:cfg.fluid, dn:cfg.dn, points:pts, getTemp:cfg.getTemp, material:mat, arrowMat,
+    len:bent.len, velocity, fixedColor:cfg.fixedColor,
+    from:cfg.from||'', to:cfg.to||'', label:cfg.label||'',
+    bends:bent.arcs.length, circuit:cfg.circuit||''
+  };
+  pipeRegistry.push(entry);
+
+  if(cfg.label){
+    const t = cfg.labelT!==undefined?cfg.labelT:0.5;
+    const mid = pathPointAt(pts, t);
+    const spr = makeSprite([cfg.label], {size:10.5, worldH:0.075, bg:'rgba(14,18,24,.82)', border: cfg.fluid==='co2'?'rgba(224,120,47,.55)':'rgba(63,208,230,.55)'});
+    spr.position.copy(mid).add(V3(0, radius+0.045, 0));
+    gLabelsPipe.add(spr);
+  }
+  return entry;
+}
+
+/* ---------------------------------------------------------------------
+   14. PIPE ROUTES — CO2 loop. Four runs, four distinct rack heights
+   (2.06 / 2.16 / 2.26 / 2.36) — a closed loop that never touches itself.
+--------------------------------------------------------------------- */
+const UP   = V3(0,0.18,0);
+// Each BPHE's CO2-in and CO2-out ports sit at the *same* X/Z (only height
+// differs), so a small opposite X-nudge keeps the "in" and "out" jumper
+// columns from coinciding with each other — the Z step alone already
+// clears the block itself (block spans z 1.065–1.175, this steps past it).
+const REAR_IN  = V3(0.04,0,-0.20);
+const REAR_OUT = V3(-0.04,0,-0.20);
+// BPHE water IN and water OUT sit at the same X/Z (only height differs),
+// exactly like the CO2 pair — so they get the same opposite nudge, or their
+// vertical risers would share one column and overlap.
+const FRONT_IN  = V3(-0.05,0,0.18);
+const FRONT_OUT = V3( 0.05,0,0.18);
+const FRONT     = V3(0,0,0.18);
+// HX-302 urcă spre etajul ACM (y≈2,0) și ar tăia exact conducta de tur a
+// lui HX-301, care traversează la y=1,74 pe z=1,355 — deci coloana lui
+// urcă mai în spate, la z≈1,52 (și în afara șinei de rack de la z=1,42).
+const FRONT_ACM = V3(0.05,0,0.345);
+
+// VARIANTA B: CO₂-ul trece întâi prin HX-302 (ACM) — are nevoie de vârful
+// pantei de răcire ca să facă 60 °C — și abia apoi prin HX-301 (calorifere),
+// care se mulțumește cu ce rămâne. Ordinea inversă n-ar funcționa: dacă
+// aici ar fi primele caloriferele, CO₂-ul ar ieși la ~50 °C și n-ar mai
+// putea produce ACM de 60 °C.
+addPipe({ group:gPipeCO2, fluid:'co2', dn:12, velocity:3.0,
+  circuit:'CO₂', from:'C-301 refulare', to:'HX-302 CO₂ IN (sus-spate)',
+  points: rackRoute(eqComp.ports.discharge, UP, eqHx302.ports.co2In, REAR_IN, SHELF.co2Discharge),
+  getTemp: s=>s.co2_disc, label:'CO₂ · refulare HP', labelT:0.5 });
+
+addPipe({ group:gPipeCO2, fluid:'co2', dn:12, velocity:2.0,
+  circuit:'CO₂', from:'HX-302 CO₂ OUT (jos-spate)', to:'HX-301 CO₂ IN (sus-spate)',
+  points: rackRoute(eqHx302.ports.co2Out, REAR_OUT, eqGasC.ports.co2In, REAR_IN, 2.16),
+  getTemp: s=>s.co2_afterACM, label:'CO₂ · după gas cooler ACM', labelT:0.5 });
+
+// HX-301 -> V-301: short local jumper (both low, ~1m apart) — no need for
+// the overhead rack, and going there made the pipe invisible in a normal view.
+addPipe({ group:gPipeCO2, fluid:'co2', dn:12, velocity:0.5,
+  circuit:'CO₂', from:'HX-301 CO₂ OUT (jos-spate)', to:'V-301 intrare',
+  points: rackRoute(eqGasC.ports.co2Out, REAR_OUT, eqEEV.ports.in, V3(-0.10,0,0), SHELF.co2LocalA),
+  getTemp: s=>s.co2_afterHX, label:'CO₂ · HP răcit (supracritic)', labelT:0.5 });
+
+// V-301 -> E-301: same idea; shelf sits above the evaporator's own top
+// (1.13) since this run sweeps past it in X before turning toward the port.
+addPipe({ group:gPipeCO2, fluid:'co2', dn:12, velocity:0.6,
+  circuit:'CO₂', from:'V-301 ieșire', to:'E-301 CO₂ IN (sus-spate)',
+  points: rackRoute(eqEEV.ports.out, V3(0.10,0,0), eqEvap.ports.co2In, REAR_IN, SHELF.co2LocalB),
+  getTemp: s=>s.co2_afterEEV, label:'CO₂ · după laminare LP', labelT:0.5 });
+
+addPipe({ group:gPipeCO2, fluid:'co2', dn:16, velocity:4.0,
+  circuit:'CO₂', from:'E-301 CO₂ OUT (jos-spate)', to:'C-301 aspirație',
+  points: rackRoute(eqEvap.ports.co2Out, REAR_OUT, eqComp.ports.suction, UP, SHELF.co2Suction),
+  getTemp: s=>s.co2_suction, label:'CO₂ · aspirație LP', labelT:0.5 });
+
+/* ---------------------------------------------------------------------
+   15. PIPE ROUTES — water source circuit (5/0°C), low service trench
+--------------------------------------------------------------------- */
+// Both stubs terminate right at the external-source cap (eqExtSource) —
+// this circuit does NOT continue to the tanks, it closes only with the
+// external source (well/borehole). See eqExtSource's own info card.
+const srcStubIn  = eqExtSource.ports.top.clone().add(V3(-0.055, 0.02, -0.055));
+const srcStubOut = eqExtSource.ports.top.clone().add(V3( 0.055, 0.02,  0.055));
+
+addPipe({ group:gPipeSource, fluid:'apa', dn:25,
+  circuit:'Apă sursă', from:'Racord sursă externă', to:'Filtru Y intrare',
+  points: [srcStubIn, eqFilter.ports.in],
+  getTemp: s=>s.apaSrcIn, label:'Apă sursă · IN 5 °C ← din sursa externă' });
+
+addPipe({ group:gPipeSource, fluid:'apa', dn:25,
+  circuit:'Apă sursă', from:'Filtru Y ieșire', to:'P-301 aspirație',
+  points: [eqFilter.ports.out, eqPumpSrc.ports.in],
+  getTemp: s=>s.apaSrcIn });
+
+addPipe({ group:gPipeSource, fluid:'apa', dn:25,
+  circuit:'Apă sursă', from:'P-301 refulare', to:'E-301 apă IN (jos-față)',
+  points: rackRoute(eqPumpSrc.ports.out, V3(0.14,0,0), eqEvap.ports.waterIn, FRONT_IN, SHELF.srcToEvap),
+  getTemp: s=>s.apaSrcIn, label:'Apă sursă → evaporator' });
+
+addPipe({ group:gPipeSource, fluid:'apa', dn:25,
+  circuit:'Apă sursă', from:'E-301 apă OUT (sus-față)', to:'Racord retur sursă externă',
+  points: rackRoute(eqEvap.ports.waterOut, FRONT_OUT, srcStubOut, V3(-0.10,0,-0.16), SHELF.srcReturn),
+  getTemp: s=>s.apaSrcOut, label:'Apă sursă · RETUR 0 °C → înapoi la sursă' });
+
+/* ---------------------------------------------------------------------
+   16. PIPE ROUTES — primary heating circuit (PDC ↔ single buffer tank)
+   T-CAL01 now carries THREE taps at top and three at bottom (tur-in,
+   consumer-supply-out, ACM-supply-out / return-out, consumer-return-in,
+   ACM-return-in) — each pipe gets its own small lateral nudge off the
+   shared port so they read as separate bushings on the same tank head,
+   not one coincident bundle.
+--------------------------------------------------------------------- */
+addPipe({ group:gPipePrimary, fluid:'apa', dn:20,
+  circuit:'Încălzire primar', from:'T-CAL01 jos', to:'P-302 aspirație',
+  points: rackRoute(eqTankA.ports.bottom, V3(-0.04,0,0.03), eqPumpPrim.ports.in, V3(-0.14,0,0), SHELF.primaryReturn),
+  getTemp: s=>s.apaIncRetur, label:'Apă încălzire · RETUR → PDC' });
+
+addPipe({ group:gPipePrimary, fluid:'apa', dn:20,
+  circuit:'Încălzire primar', from:'P-302 refulare', to:'HX-301 apă IN (jos-față)',
+  points: rackRoute(eqPumpPrim.ports.out, V3(0.14,0,0), eqGasC.ports.waterIn, FRONT_IN, SHELF.gascoolerRetIn),
+  getTemp: s=>s.apaIncRetur, label:'Apă încălzire · retur 45 °C' });
+
+addPipe({ group:gPipePrimary, fluid:'apa', dn:20,
+  circuit:'Încălzire primar', from:'HX-301 apă OUT (sus-față)', to:'T-CAL01 sus',
+  points: rackRoute(eqGasC.ports.waterOut, FRONT_OUT, eqTankA.ports.top, V3(0.06,0.10,-0.04), SHELF.primaryTur),
+  getTemp: s=>s.apaIncTur, label:'Apă încălzire · TUR 55 °C' });
+
+/* ---------------------------------------------------------------------
+   17. PIPE ROUTES — secondary / consumers circuit (radiatoare)
+--------------------------------------------------------------------- */
+addPipe({ group:gPipeSecond, fluid:'apa', dn:20,
+  circuit:'Încălzire secundar', from:'T-CAL01 sus', to:'P-303 aspirație',
+  points: rackRoute(eqTankA.ports.top, V3(-0.06,0.09,0.04), eqPumpSec.ports.in, V3(-0.14,0,0), SHELF.secSupply),
+  getTemp: s=>s.apaConsTur, label:'spre P-303 · 55 °C' });
+
+addPipe({ group:gPipeSecond, fluid:'apa', dn:20,
+  circuit:'Încălzire secundar', from:'P-303 refulare', to:'DIST-01 tur',
+  points: rackRoute(eqPumpSec.ports.out, V3(0.14,0,0), eqManifold.ports.tur, V3(0,0.10,0), SHELF.secTur),
+  getTemp: s=>s.apaConsTur, label:'Apă consumatori · TUR 55 °C' });
+
+addPipe({ group:gPipeSecond, fluid:'apa', dn:20,
+  circuit:'Încălzire secundar', from:'DIST-01 retur', to:'T-CAL01 jos',
+  points: rackRoute(eqManifold.ports.retur, V3(0,-0.10,0), eqTankA.ports.bottom, V3(0.04,0,-0.03), SHELF.consumerReturn),
+  getTemp: s=>s.apaConsRetur, label:'Apă consumatori · RETUR 45 °C' });
+
+/* ---------------------------------------------------------------------
+   17b. PIPE ROUTES — ACM sub-system
+   Primary side: T-CAL01 -> P-ACM -> HX-ACM -> back to T-CAL01 (closed,
+   sealed loop water, temperature-coloured like the rest of the heating
+   circuit). Secondary side: T-ACM <-> HX-ACM is drawn as a plain grey
+   loop (potable water, not part of the sealed-loop colour scheme) plus
+   the cold-mains fill and the hot draw to the shower/sink distribution.
+--------------------------------------------------------------------- */
+/* --- VARIANTA B: ACM e acum 100% apă potabilă (gri fix) ---------------
+   Nu mai există buclă intermediară de apă de încălzire: P-ACM trage direct
+   din fundul lui T-ACM1, trece prin gas cooler-ul HX-302 (unde CO₂-ul de
+   ~100 °C o duce la 60 °C într-o singură trecere) și o întoarce în vârful
+   lui T-ACM2. Cele două vase în serie mențin fundul lanțului rece — exact
+   condiția de care depinde câștigul de COP. */
+const POTABLE = 0x93a0a8;
+
+addPipe({ group:gPipeAcm, fluid:'apa', dn:20, fixedColor:POTABLE, circuit:'ACM potabil',
+  from:'Racord apă rece rețea', to:'T-ACM1 jos',
+  points: rackRoute(eqAcmSource.ports.top, V3(0,0.10,0), eqTAcm[0].ports.bottom, V3(0,0,0.34), 0.30),
+  getTemp: s=>12, label:'Apă rece rețea → T-ACM1' });
+
+addPipe({ group:gPipeAcm, fluid:'apa', dn:20, fixedColor:POTABLE, circuit:'ACM potabil',
+  from:'T-ACM1 jos', to:'P-ACM aspirație',
+  points: rackRoute(eqTAcm[0].ports.bottom, V3(-0.34,0,0), eqPumpAcm.ports.in, V3(0.12,0,0), 0.24),
+  getTemp: s=>12, label:'T-ACM1 (jos, rece) → P-ACM' });
+
+addPipe({ group:gPipeAcm, fluid:'apa', dn:20, fixedColor:POTABLE, circuit:'ACM potabil',
+  from:'P-ACM refulare', to:'HX-302 apă IN (jos-față)',
+  points: rackRoute(eqPumpAcm.ports.out, V3(-0.12,0,0.20), eqHx302.ports.waterIn, FRONT_IN, 0.50),
+  getTemp: s=>12, label:'P-ACM → HX-302' });
+
+addPipe({ group:gPipeAcm, fluid:'apa', dn:20, fixedColor:POTABLE, circuit:'ACM potabil',
+  from:'HX-302 apă OUT (sus-față)', to:'T-ACM2 sus',
+  points: rackRoute(eqHx302.ports.waterOut, FRONT_ACM, eqTAcm[1].ports.top, V3(-0.07,0.10,0.06), 2.02),
+  getTemp: s=>s.acmTemp, label:'HX-302 → T-ACM2 (ACM 60 °C)' });
+
+// legătura în serie T-ACM1 sus -> T-ACM2 jos: peste calotă, pe un culoar
+// din spate (z=1,58, în afara mantalei) și intră pe sub vas (y=0,105)
+(function(){
+  const top = eqTAcm[0].ports.top, bot = eqTAcm[1].ports.bottom, ZL = 1.58, YL = 1.92;
+  addPipe({ group:gPipeAcm, fluid:'apa', dn:20, fixedColor:POTABLE, circuit:'ACM potabil',
+    from:'T-ACM1 sus', to:'T-ACM2 jos',
+    points:[ top.clone(), V3(top.x,YL,top.z), V3(top.x,YL,ZL), V3(bot.x,YL,ZL), V3(bot.x,bot.y,ZL), bot.clone() ],
+    getTemp: s=>s.acmTemp-11, label:'serie T-ACM1 → T-ACM2' });
+})();
+
+addPipe({ group:gPipeAcm, fluid:'apa', dn:20, fixedColor:POTABLE, circuit:'ACM potabil',
+  from:'T-ACM2 sus', to:'DIST-ACM (3 dușuri + 2 chiuvete)',
+  points: rackRoute(eqTAcm[1].ports.top, V3(0.07,0.10,-0.05), eqAcmDist.ports.hotIn, V3(0,0.14,0), 2.12),
+  getTemp: s=>s.acmTemp, label:'ACM 60 °C → dușuri/chiuvete' });
+
+/* ---------------------------------------------------------------------
+   18. AUX branches — VEX-01 and SV-01 are two INDEPENDENT tees off the
+   primary TUR line (70°C, HX-301 -> tanks) — not one routed through the
+   other. Both branch from the same physical point on that pipe (a real
+   tee fitting), matching how these are actually plumbed on a skid.
+--------------------------------------------------------------------- */
+const primaryTurTee = V3(2.72, SHELF.primaryTur, 1.355); // sits on the primaryTur run (X 2.18–3.38 @ this Y,Z)
+(function teeMarker(){
+  const j = sph(dnR(20)*1.15, new THREE.MeshStandardMaterial({color:0xffffff, metalness:0.4, roughness:0.4}), 12,10);
+  j.position.copy(primaryTurTee);
+  gAux.add(j);
+})();
+
+addPipe({ group:gAux, fluid:'apa', dn:15,
+  circuit:'Auxiliar', from:'Teu pe linia TUR', to:'VEX-01',
+  points: [primaryTurTee,
+           V3(primaryTurTee.x, primaryTurTee.y, eqVex.ports.in.z),
+           V3(eqVex.ports.in.x-0.26, primaryTurTee.y, eqVex.ports.in.z),
+           V3(eqVex.ports.in.x-0.26, eqVex.ports.in.y, eqVex.ports.in.z),
+           eqVex.ports.in.clone()],
+  getTemp: s=>s.apaIncTur, label:'VEX-01' });
+
+addPipe({ group:gAux, fluid:'apa', dn:15,
+  circuit:'Auxiliar', from:'Teu pe linia TUR', to:'SV-01',
+  points: [primaryTurTee, V3(eqSafety.ports.in.x, primaryTurTee.y, primaryTurTee.z), V3(eqSafety.ports.in.x, primaryTurTee.y, eqSafety.ports.in.z), eqSafety.ports.in],
+  getTemp: s=>s.apaIncTur, label:'SV-01 · 3 bar' });
+
+// SV-01's discharge -> drain funnel: a plain grey stub (not a live process
+// line, no fluid colour) so it's obvious this only carries flow if the
+// valve actually opens, and it visibly *goes* somewhere instead of
+// stopping in mid-air.
+(function buildDrainLine(){
+  const mat = new THREE.MeshStandardMaterial({color:0x8a929a, metalness:0.5, roughness:0.5});
+  const pts = [eqSafety.ports.discharge, V3(eqSafety.ports.discharge.x, eqSafety.ports.discharge.y-0.25, eqSafety.ports.discharge.z+0.03), eqDrain.ports.in];
+  for(let i=0;i<pts.length-1;i++){
+    const seg = cylBetween(pts[i], pts[i+1], 0.013, mat);
+    if(seg) gAux.add(seg);
+  }
+  const spr = makeSprite(['Evacuare SV-01 → golire'], {size:10, worldH:0.07, bg:'rgba(14,18,24,.82)', border:'rgba(154,167,181,.5)'});
+  spr.position.copy(pathPointAt(pts,0.5)).add(V3(0.10,0,0));
+  gLabelsPipe.add(spr);
+})();
+
+// Fill/make-up valve -> taps into the sealed loop right at VEX-01's base
+// (a normally-closed branch — greyed out, not part of the live flow colours).
+(function buildFillLine(){
+  const mat = new THREE.MeshStandardMaterial({color:0x8a929a, metalness:0.5, roughness:0.5});
+  const pts = [eqFillValve.ports.out, V3(eqVex.ports.in.x, eqFillValve.ports.out.y, eqVex.ports.in.z), eqVex.ports.in];
+  for(let i=0;i<pts.length-1;i++){
+    const seg = cylBetween(pts[i], pts[i+1], 0.012, mat);
+    if(seg) gAux.add(seg);
+  }
+  const spr = makeSprite(['V-UMPLERE (normal închis)'], {size:10, worldH:0.07, bg:'rgba(14,18,24,.82)', border:'rgba(154,167,181,.5)'});
+  spr.position.copy(pathPointAt(pts,0.5)).add(V3(0,0.06,0));
+  gLabelsPipe.add(spr);
+})();
+
+/* ---------------------------------------------------------------------
+   19. FLOW PARTICLES — speed is driven by each pipe's real velocity
+   (m/s, from the line-list: ~1.0 m/s DN25 source water, ~0.85 m/s DN20
+   heating water, faster for the small-bore CO2 vapour lines) so a vapour
+   line visibly races past while a liquid line drifts — not a fixed rate.
+--------------------------------------------------------------------- */
+const riders = [];
+function buildRiders(){
+  gParticles.clear(); riders.length = 0;
+  pipeRegistry.forEach(p=>{
+    const n = Math.max(2, Math.round(p.len/0.35));
+    for(let i=0;i<n;i++){
+      const r = dnR(p.dn)*1.7;
+      const mat = new THREE.MeshStandardMaterial({color:0xffffff, emissive:0xffffff, emissiveIntensity:1.1, roughness:0.25});
+      const m = sph(r, mat, 10, 8);
+      m.castShadow = false;
+      m.userData.t0 = i/n;
+      m.userData.pipe = p;
+      gParticles.add(m);
+      riders.push(m);
+    }
+  });
+}
+buildRiders();
+
+/* ---------------------------------------------------------------------
+   19b. LINE LIST — regenerated from the model itself. Lengths are the
+   TRUE centreline length of each run (straight legs + swept elbow arcs),
+   so they can be used as a cutting list; the bend count tells you how
+   many elbow fittings each run needs.
+--------------------------------------------------------------------- */
+const CIRCUIT_ORDER = ['CO₂','Apă sursă','Încălzire primar','Încălzire secundar','ACM primar','ACM potabil','Auxiliar'];
+function renderLineList(){
+  const el = document.getElementById('linesBody');
+  if(!el) return;
+  const groups = {};
+  pipeRegistry.forEach(p=>{
+    const c = p.circuit || 'Altele';
+    (groups[c] || (groups[c]=[])).push(p);
+  });
+  const order = CIRCUIT_ORDER.filter(c=>groups[c]).concat(Object.keys(groups).filter(c=>CIRCUIT_ORDER.indexOf(c)<0));
+  let html = '';
+  order.forEach(c=>{
+    html += `<div class="lnGroup">${c}</div>`;
+    groups[c].forEach(p=>{
+      const route = (p.from && p.to) ? `${p.from} → ${p.to}` : (p.label||'—');
+      html += `<div class="lnRow"><div class="d">${route}</div>
+        <div class="n">${(DN_REAL[p.dn]||('DN'+p.dn)).split(' ')[0]}<br>${p.len.toFixed(2)} m<br>${p.bends} cot.</div></div>`;
+    });
+  });
+  const perDn = {};
+  pipeRegistry.forEach(p=>{ perDn[p.dn] = (perDn[p.dn]||0) + p.len; });
+  html += '<div class="lnTot"><b>Total țeavă pe diametru</b><br>' +
+    Object.keys(perDn).sort((a,b)=>a-b).map(dn=>`${DN_REAL[dn]||('DN'+dn)} — <b>${perDn[dn].toFixed(2)} m</b>`).join('<br>') +
+    `<br><br>Coturi total: <b>${pipeRegistry.reduce((n,p)=>n+p.bends,0)}</b> · racorduri: <b>${pipeRegistry.length*2}</b></div>`;
+  html += `<div class="lnNote"><b>De reținut înainte de execuție:</b> lungimile sunt exacte pentru <i>acest</i> aranjament
+    (axa curbelor, rază cot ≈ 1,5×D) — dar poziția componentelor folosește dimensiuni de gabarit aproximative.
+    Verifică fiecare cotă față de fișele reale ale echipamentelor comandate înainte să tai țeavă, și adaugă rezervă
+    pentru fitinguri, izolație și dilatare.</div>`;
+  el.innerHTML = html;
+}
+renderLineList();
+
+/* ---------------------------------------------------------------------
+   20. LAYERS PANEL
+--------------------------------------------------------------------- */
+const LAYERS = [
+  {key:'equip', label:'Echipamente principale', group:gEquipment, color:'#9aa3ab', on:true},
+  {key:'labelsEquip', label:'Etichete echipamente', group:gLabelsEquip, color:'#dce3ea', on:true},
+  {key:'co2', label:'Traseu CO₂', group:gPipeCO2, color:'hsl(27 85% 42%)', on:true},
+  {key:'source', label:'Apă sursă (5/0°C)', group:gPipeSource, color:'hsl(207 60% 55%)', on:true},
+  {key:'primary', label:'Apă încălzire — primar', group:gPipePrimary, color:'hsl(207 78% 32%)', on:true},
+  {key:'secondary', label:'Apă consumatori — secundar', group:gPipeSecond, color:'hsl(207 65% 42%)', on:true},
+  {key:'acm', label:'ACM — 2×300 l + HX-302 (potabilă)', group:gPipeAcm, color:'hsl(207 50% 50%)', on:true},
+  {key:'aux', label:'Vas expansiune / siguranță', group:gAux, color:'#c9932f', on:true},
+  {key:'labelsPipe', label:'Etichete conducte (CO₂/apă/tur/retur)', group:gLabelsPipe, color:'#dce3ea', on:true},
+  {key:'instruments', label:'Vane, senzori, manometre', group:gInstruments, color:'#6fb0f0', on:true},
+  {key:'flow', label:'Animație flux', group:gParticles, color:'#ffffff', on:true},
+];
+const layerBody = document.getElementById('layerBody');
+LAYERS.forEach(L=>{
+  const row = document.createElement('div'); row.className='layerRow';
+  row.innerHTML = `<span class="swatch" style="background:${L.color}"></span><label>${L.label}</label><button class="toggle ${L.on?'on':''}" data-key="${L.key}"></button>`;
+  layerBody.appendChild(row);
+  row.querySelector('.toggle').addEventListener('click', (e)=>{
+    L.on = !L.on;
+    L.group.visible = L.on;
+    e.currentTarget.classList.toggle('on', L.on);
+  });
+});
+
+/* ---------------------------------------------------------------------
+   20b. INTERLOCKS / ALARMS — mirrors the P&ID "Logica de control":
+   start permissive (FT-SURSĂ, PT-HP, TT-HP-TUR), and the two protections
+   (ΔT / suprapresiune → SV-01). Purely derived from `state`, so wiring
+   this to live PLC bits later is a matter of setting those fields.
+--------------------------------------------------------------------- */
+function evaluateInterlocks(s){
+  return [
+    {ok:s.srcFlowOk, label:'FT-SURSĂ — debit apă sursă confirmat', detail:s.srcFlowOk?'debit OK':'lipsă debit — interblocare pornire PDC'},
+    {ok:s.hpOk, label:'PT-HP — presiune CO₂ în limite', detail:s.hpOk?Math.round(s.pt_hp)+' bar, în limite':Math.round(s.pt_hp)+' bar — peste prag'},
+    {ok:s.turOk, label:'TT-HP-TUR sub setpoint (55 °C / 65 °C la ACM)', detail:s.turOk?'sub setpoint':'peste setpoint — reduce puterea'},
+    {ok:s.deltaTOk, label:'ΔT circuit încălzire — în limite', detail:s.deltaTOk?'ΔT normal':'ΔT excesiv — protecție activă'},
+    {ok:!s.safetyOpen, label:'SV-01 — supapă de siguranță închisă', detail:s.safetyOpen?'DESCHISĂ — evacuează presiune':'închisă'},
+    {ok:s.acmTemp>=55, label:'TT-ACM — boiler peste pragul de 55 °C',
+      detail: s.acmTemp>=60 ? Math.round(s.acmTemp)+' °C — la setpoint, reîncărcare oprită'
+            : (s.acmTemp>=55 ? Math.round(s.acmTemp)+' °C — în banda de lucru'
+                             : Math.round(s.acmTemp)+' °C — sub prag, prioritate ACM activă')},
+    {ok:s.tA_top>=45 || !s.running, label:'T-CAL01 — rezervă pentru calorifere',
+      detail: s.tA_top>=45 ? Math.round(s.tA_top)+' °C — suficient pentru regimul 55/45'
+                           : Math.round(s.tA_top)+' °C — sub 45 °C, prioritatea revine la încălzire'},
+  ];
+}
+function renderInterlocks(){
+  const rows = evaluateInterlocks(state);
+  const allOk = rows.every(r=>r.ok);
+  const banner = document.getElementById('interlockBanner');
+  const rowsEl = document.getElementById('interlockRows');
+  if(state.alarmMsg){
+    banner.className = 'ilBanner crit';
+    banner.innerHTML = '⚠ PDC BLOCATĂ / OPRITĂ<br><span style="font-weight:500">'+state.alarmMsg+'</span>';
+  } else if(state.priorityMsg){
+    banner.className = 'ilBanner info';
+    banner.innerHTML = '⏱ PRIORITATE ACM<br><span style="font-weight:500">'+state.priorityMsg+'</span>';
+  } else if(state.running){
+    banner.className = 'ilBanner ok';
+    banner.textContent = '✓ Condiție de pornire PDC îndeplinită — în funcțiune';
+  } else {
+    banner.className = 'ilBanner idle';
+    banner.textContent = '— PDC oprită (standby), toate interblocările OK';
+  }
+  rowsEl.innerHTML = rows.map(r=>`
+    <div class="ilRow">
+      <div class="ilDot ${r.ok?'ok':'crit'}"></div>
+      <div class="ilTxt"><b>${r.label}</b><span>${r.detail}</span></div>
+    </div>
+  `).join('');
+}
+
+/* ---------------------------------------------------------------------
+   20c. CLIPPING SECTION — a movable cut plane (renderer-level, applies
+   to the whole scene) so the pipe rack behind equipment, and tank
+   interiors, can be inspected without spinning the whole model.
+--------------------------------------------------------------------- */
+renderer.localClippingEnabled = true;
+const clipPlane = new THREE.Plane(new THREE.Vector3(-1,0,0), 999);
+let clipEnabled = false, clipAxis = 'x';
+const CLIP_RANGE = { x:[-0.2, 6.9], z:[-0.15, 2.15] };
+[MAT.insul, MAT.insulCap, MAT.steel, MAT.compBody, MAT.gasCyl, MAT.deck, MAT.panelBody].forEach(m=>{ m.side = THREE.DoubleSide; });
+// slider = 100 always shows the full model; dragging it down sweeps a cut
+// plane in from one side — from the right on X, from the near/operator
+// side on Z (so what stays visible on Z is the rack and tank backs).
+function applyClip(){
+  if(!clipEnabled){ renderer.clippingPlanes = []; return; }
+  const t = +document.getElementById('clipSlider').value/100;
+  if(clipAxis==='x'){
+    const [lo,hi] = CLIP_RANGE.x;
+    clipPlane.normal.set(-1,0,0);
+    clipPlane.constant = THREE.MathUtils.lerp(lo, hi, t); // keep x <= constant
+  } else {
+    const [lo,hi] = CLIP_RANGE.z;
+    const cutAt = THREE.MathUtils.lerp(hi, lo, t);
+    clipPlane.normal.set(0,0,1);
+    clipPlane.constant = -cutAt; // keep z >= cutAt
+  }
+  renderer.clippingPlanes = [clipPlane];
+}
+document.getElementById('clipOn').addEventListener('click', (e)=>{
+  clipEnabled = !clipEnabled;
+  e.currentTarget.classList.toggle('on', clipEnabled);
+  applyClip();
+});
+document.querySelectorAll('#clipAxisSeg button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('#clipAxisSeg button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    clipAxis = b.dataset.axis;
+    applyClip();
+  });
+});
+document.getElementById('clipSlider').addEventListener('input', applyClip);
+
+/* ---------------------------------------------------------------------
+   21. SCENARIO UI + APPLY STATE
+--------------------------------------------------------------------- */
+function applyState(){
+  pipeRegistry.forEach(p=>{
+    if(p.fixedColor!==undefined) return;   // apă potabilă — gri fix, nu intră în schema de culori pe temperatură
+    const temp = p.getTemp(state);
+    const c = fluidColor(p.fluid, temp);
+    p.material.color.copy(c);
+    p.material.emissive.copy(c).multiplyScalar(0.05);
+    p.arrowMat.color.copy(c);
+  });
+  eqTankA.bandTop.material.color.copy(fluidColor('apa', state.tA_top));
+  eqTankA.bandBot.material.color.copy(fluidColor('apa', state.tA_bot));
+  // stratificarea lanțului: T-ACM3 (livrare) e cel mai cald, T-ACM1 cel
+  // mai rece — asta e chiar efectul pentru care sunt legate în serie.
+  eqTAcm.forEach((tk,i)=>{
+    const top = state.acmTemp - (eqTAcm.length-1-i)*11;
+    const bot = top - 10;
+    tk.bandTop.material.color.copy(fluidColor('apa', top));
+    tk.bandBot.material.color.copy(fluidColor('apa', bot));
+  });
+  const pdcLed = state.alarmMsg ? MAT.glowRed : (state.running ? MAT.glowGreen : MAT.glowAmber);
+  eqComp.group.userData.led && (eqComp.group.userData.led.material = pdcLed);
+  if(eqSafety.group.userData.indicator){
+    const ind = eqSafety.group.userData.indicator;
+    ind.material.emissive = new THREE.Color(state.safetyOpen ? 0xb23a2f : 0x000000);
+    ind.material.emissiveIntensity = state.safetyOpen ? 1.1 : 0;
+  }
+
+  document.getElementById('stComp').textContent = state.alarmMsg ? 'BLOCATĂ' : (state.running ? 'ON · ' + Math.round(state.co2_disc) + '°C refulare' : 'OPRIT');
+  document.getElementById('stCo2').textContent = Math.round(state.pt_hp)+' / '+Math.round(state.pt_lp)+' bar';
+  document.getElementById('stApa').textContent = Math.round(state.apaIncTur)+' / '+Math.round(state.apaIncRetur)+' °C';
+  const acmEl = document.getElementById('stAcm');
+  if(acmEl) acmEl.textContent = Math.round(state.acmTemp)+' °C' + (state.acmTemp<55 ? ' ↑încarcă' : '');
+  document.getElementById('stFlow').textContent = state.running ? Math.round(state.flow*100)+' %' : 'oprit';
+
+  gParticles.visible = LAYERS.find(l=>l.key==='flow').on;
+  renderInterlocks();
+  if(currentInfoData) showInfo(currentInfoData);
+}
+
+const scenarioRow = document.getElementById('scenarioRow');
+Object.keys(SCENARIOS).forEach(key=>{
+  const sc = SCENARIOS[key];
+  const btn = document.createElement('button');
+  btn.className = 'sc' + (key===scenarioKey?' active':'');
+  btn.innerHTML = `<span class="t">${sc.label}</span><span class="s">${sc.sub}</span>`;
+  btn.addEventListener('click', ()=>{
+    scenarioKey = key;
+    state = Object.assign(state, SCENARIOS[key]);
+    document.querySelectorAll('#scenarioRow .sc').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    applyState();
+  });
+  scenarioRow.appendChild(btn);
+});
+
+window.PDC.setScenario = function(key){ if(SCENARIOS[key]){ scenarioKey=key; state=Object.assign(state,SCENARIOS[key]); applyState(); } };
+window.PDC.setTemp = function(field, value){ state[field]=value; applyState(); };
+window.PDC.state = state;
+
+applyState();
+
+/* ---------------------------------------------------------------------
+   22. CAMERA PRESETS
+--------------------------------------------------------------------- */
+const VIEWS = {
+  iso:   { pos:V3(6.2,3.7,5.6),  target:CENTER },
+  front: { pos:V3(2.3,1.3,7.6),  target:V3(2.3,0.85,0.85) },
+  top:   { pos:V3(2.3,8.6,0.9),  target:V3(2.3,0,0.85) },
+  co2:   { pos:V3(1.3,1.9,3.1),  target:V3(1.3,0.9,0.8) },
+  tanks: { pos:V3(3.1,2.4,4.2),  target:V3(3.1,0.8,0.9) },
+};
+let animCam = null;
+function flyTo(key){
+  const v = VIEWS[key]; if(!v) return;
+  if(camMode!=='orbit') setCamMode('orbit'); // presets fly to a fixed pivot, which only orbit mode uses
+  const p0 = camera.position.clone(), t0 = controls.target.clone();
+  const dur = 900; const t1perf = performance.now();
+  animCam = { p0, t0, p1:v.pos.clone(), t1:v.target.clone(), start:t1perf, dur };
+}
+document.querySelectorAll('#viewSeg button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('#viewSeg button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    flyTo(b.dataset.view);
+  });
+});
+document.querySelector('#viewSeg button[data-view="iso"]').classList.add('active');
+
+/* ---------------------------------------------------------------------
+   23. PICKING (click for info) + hover tooltip
+--------------------------------------------------------------------- */
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const tooltip = document.getElementById('tooltip');
+
+function findEquip(obj){
+  let o = obj;
+  while(o){
+    if(o.userData && o.userData.info) return o;
+    o = o.parent;
+  }
+  return null;
+}
+function pick(clientX, clientY){
+  mouse.x = (clientX/innerWidth)*2-1;
+  mouse.y = -(clientY/innerHeight)*2+1;
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects([gEquipment, gInstruments], true);
+  for(const h of hits){
+    const eq = findEquip(h.object);
+    if(eq) return eq;
+  }
+  return null;
+}
+renderer.domElement.addEventListener('pointermove', (e)=>{
+  const eq = pick(e.clientX, e.clientY);
+  if(eq){
+    tooltip.style.display='block';
+    tooltip.style.left = e.clientX+'px'; tooltip.style.top = e.clientY+'px';
+    tooltip.textContent = eq.userData.info.tag;
+  } else {
+    tooltip.style.display='none';
+  }
+});
+// drag-aware selection: a look-drag (orbit rotate, or fly-mode look) must
+// never register as an equipment click — only a near-stationary press does.
+let pickDownX=0, pickDownY=0, pickMoved=false;
+renderer.domElement.addEventListener('pointerdown', (e)=>{ pickDownX=e.clientX; pickDownY=e.clientY; pickMoved=false; });
+renderer.domElement.addEventListener('pointermove', (e)=>{
+  if(e.buttons && (Math.abs(e.clientX-pickDownX)>4 || Math.abs(e.clientY-pickDownY)>4)) pickMoved = true;
+});
+renderer.domElement.addEventListener('pointerup', (e)=>{
+  if(pickMoved) return;
+  const eq = pick(e.clientX, e.clientY);
+  if(eq) showInfo(eq.userData.info);
+});
+
+/* ---------------------------------------------------------------------
+   24. RENDER LOOP
+--------------------------------------------------------------------- */
+const clock = new THREE.Clock();
+let lastHistTick = 0;
+function animate(){
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+
+  if(clock.elapsedTime - lastHistTick > 0.5){
+    lastHistTick = clock.elapsedTime;
+    tickHistory();
+    if(currentInfoData && (currentInfoData.trend||[]).length) showInfo(currentInfoData);
+  }
+
+  if(animCam){
+    const t = THREE.MathUtils.clamp((performance.now()-animCam.start)/animCam.dur, 0, 1);
+    const e = t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2; // easeInOutQuad
+    camera.position.lerpVectors(animCam.p0, animCam.p1, e);
+    controls.target.lerpVectors(animCam.t0, animCam.t1, e);
+    if(t>=1) animCam=null;
+  }
+
+  if(state.running && LAYERS.find(l=>l.key==='flow').on){
+    const flowScale = 0.35 + state.flow*0.65; // real velocity (m/s), scaled down at partial flow
+    riders.forEach(r=>{
+      const p = r.userData.pipe;
+      if(p.fixedColor!==undefined){ r.visible=false; return; }
+      r.visible=true;
+      const dist = p.velocity * flowScale * clock.elapsedTime;
+      const t = (r.userData.t0 + dist/p.len) % 1;
+      r.position.copy(pathPointAt(p.points, t));
+      const c = fluidColor(p.fluid, p.getTemp(state));
+      r.material.color.copy(c);
+      r.material.emissive.copy(c);
+    });
+  }
+
+  // gauge needles follow HP/LP pressure (0-130 bar mapped to a 240deg sweep)
+  gInstruments.children.forEach(c=>{
+    if(c.userData && c.userData.needle){
+      const info = c.userData.info;
+      const bar = info && info.tag && info.tag.indexOf('LP')>=0 ? state.pt_lp : state.pt_hp;
+      const max = info && info.tag && info.tag.indexOf('HP')>=0 ? 160:100;
+      const a = THREE.MathUtils.degToRad(THREE.MathUtils.lerp(-120,120, THREE.MathUtils.clamp(bar/max,0,1)));
+      c.userData.needle.rotation.z = -a;
+    }
+  });
+
+  gLabelsEquip.children.forEach(s=> s.quaternion.copy(camera.quaternion));
+  gLabelsPipe.children.forEach(s=> s.quaternion.copy(camera.quaternion));
+
+  if(camMode==='orbit') controls.update();
+  else updateFly(dt);
+  renderer.render(scene, camera);
+}
+animate();
+
+setTimeout(()=>{
+  const veil = document.getElementById('veil');
+  veil.style.opacity='0';
+  setTimeout(()=>veil.remove(), 550);
+}, 350);
+
+})();
+</script>
