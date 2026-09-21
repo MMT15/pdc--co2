@@ -6,8 +6,8 @@
 <meta name="description" content="Machetă 3D interactivă a unei pompe de căldură CO₂ transcritice: circuit CO₂ cu două gas coolere în serie, încălzire 55/45 °C și apă caldă menajeră 60 °C.">
 <meta name="color-scheme" content="light dark">
 <title>Macheta PDC CO₂</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>html,body{margin:0;padding:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
@@ -130,6 +130,32 @@
     background:var(--panel); transition:transform .15s ease; box-shadow:0 1px 2px rgba(0,0,0,.3);}
   .toggle.on{background:var(--accent);}
   .toggle.on::after{transform:translateX(13px);}
+  .toggle.part{background:color-mix(in srgb, var(--accent) 45%, var(--line));}
+  .toggle.part::after{transform:translateX(6px);}
+
+  .lyPresets{display:flex; flex-wrap:wrap; gap:5px; margin-bottom:9px;}
+  .lyPresets button{appearance:none; border:1px solid var(--line); background:var(--panel-2); color:var(--text-dim);
+    font:600 11px "IBM Plex Sans",sans-serif; padding:4px 8px; border-radius:12px; cursor:pointer;}
+  .lyPresets button:hover{color:var(--text); border-color:var(--accent);}
+  .lyPresets button.active{background:var(--accent); border-color:var(--accent); color:#04262b;}
+  .lyFilter{display:flex; gap:7px; align-items:flex-start; font-size:11px; color:var(--text-dim); line-height:1.35;
+    padding:7px 0 9px; border-bottom:1px solid var(--line); margin-bottom:4px; cursor:pointer; user-select:none;}
+  .lyFilter input{margin:1px 0 0; accent-color:var(--accent);}
+  .lyCat{border-top:1px solid var(--line);}
+  .lyCat:first-of-type{border-top:none;}
+  .lyHead{display:flex; align-items:center; gap:7px; padding:7px 0; font-size:12px; font-weight:700; color:var(--text);}
+  .lyHead .caret{appearance:none; border:none; background:none; color:var(--text-faint); cursor:pointer; width:14px; padding:0;
+    font-size:10px; transition:transform .15s ease;}
+  .lyCat.open .lyHead .caret{transform:rotate(90deg);}
+  .lyHead label{flex:1; cursor:pointer; user-select:none;}
+  .lyCnt{font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--text-faint); font-weight:500;}
+  .lySubs{display:none; padding:0 0 6px 21px;}
+  .lyCat.open .lySubs{display:block;}
+  .lySub{display:flex; align-items:center; gap:7px; padding:3px 0; font-size:11.5px; color:var(--text-dim);}
+  .lySub .swatch{width:10px; height:10px; border-radius:3px; flex:none; box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);}
+  .lySub label{flex:1; cursor:pointer; user-select:none; line-height:1.25;}
+  .lySub .solo{appearance:none; border:none; background:none; color:var(--text-faint); cursor:pointer; font-size:11px; padding:0 2px;}
+  .lySub .solo:hover{color:var(--accent);}
 
   #legend .grad{height:9px; border-radius:5px; margin:6px 0 3px;}
   #legend .gradRow{display:flex; justify-content:space-between; font-family:"IBM Plex Mono",monospace; font-size:9.5px; color:var(--text-faint); margin-bottom:9px;}
@@ -222,8 +248,6 @@
 </style>
 
 
-
-
 <div id="veil"><div class="l">se încarcă macheta&nbsp; <b>·</b> &nbsp;PDC CO₂ · calorifere 55/45 · ACM 60 °C</div></div>
 
 <div id="stage"></div>
@@ -251,7 +275,7 @@
 
 <div id="dock">
   <div class="panel" id="layers">
-    <h3>Straturi</h3>
+    <h3>Straturi · ce se vede în machetă</h3>
     <div class="body" id="layerBody"></div>
   </div>
 
@@ -274,7 +298,7 @@
         fără debit pe o parte nu transferă practic nimic, deci modurile alternează fără vane pe înaltă presiune.
       </div>
       <div style="font-size:10.5px;color:var(--text-faint);line-height:1.5;margin-top:8px;padding-top:8px;border-top:1px solid var(--line);">
-        <b style="color:var(--text-dim);">Transcritic vs. subcritic:</b> peste pragul critic al CO₂ (73,8 bar / 31,1°C), agentul e supracritic — de la C-301 până la V-301 (HX-301 e „gas cooler", nu condensator). Sub V-301, presiunea scade sub prag și CO₂ devine bifazic (evaporare reală în E-301) — regim subcritic clasic. Vezi fișa V-301 pentru graniță.
+        <b style="color:var(--text-dim);">Transcritic vs. subcritic:</b> peste pragul critic al CO₂ (73,8 bar / 31,1°C), agentul e supracritic — de la C-301, prin HX-302 și HX-301, până la vana HP-REG (de aceea schimbătoarele sunt „gas coolere", nu condensatoare). După HP-REG presiunea scade sub prag: în receiverul REC-CO2 lichidul se separă de gaz, V-301 îl dozează spre E-301, unde fierbe — regim subcritic clasic.
       </div>
     </div>
   </div>
@@ -647,12 +671,6 @@ function airVent(){
   return g;
 }
 
-function thermowell(){
-  const g = new THREE.Group();
-  const rod = cyl(0.006,0.006,0.05,MAT.steelDark,8); rod.rotation.x=Math.PI/2; rod.position.z=0.025; g.add(rod);
-  const head = box(0.03,0.03,0.03,MAT.black); head.position.z=0.055; g.add(head);
-  return g;
-}
 
 /* ---------------------------------------------------------------------
    5. LABEL SPRITES (canvas-based, screen-facing)
@@ -717,6 +735,7 @@ const gInstruments = new THREE.Group(); scene.add(gInstruments);
 const gAux         = new THREE.Group(); scene.add(gAux);
 const gLabelsEquip = new THREE.Group(); scene.add(gLabelsEquip);
 const gLabelsPipe  = new THREE.Group(); scene.add(gLabelsPipe);
+const gLabelsSmall = new THREE.Group(); scene.add(gLabelsSmall);   // armături / senzori
 const gParticles   = new THREE.Group(); scene.add(gParticles);
 
 /* ---------------------------------------------------------------------
@@ -734,6 +753,7 @@ const SCENARIOS = {
     tA_top:54, tA_bot:46,
     acmTemp:60, priorityMsg:null,
     flow:1.0,
+    co2_rec:10, pt_rec:45, pt_apa:1.8, pt_sursa:2.4, svHpOpen:false,
     srcFlowOk:true, hpOk:true, turOk:true, deltaTOk:true, safetyOpen:false,
     alarmMsg:null
   },
@@ -747,6 +767,7 @@ const SCENARIOS = {
     tA_top:36, tA_bot:33,
     acmTemp:32, priorityMsg:null,
     flow:0.55,
+    co2_rec:12, pt_rec:46, pt_apa:1.7, pt_sursa:2.4, svHpOpen:false,
     srcFlowOk:true, hpOk:true, turOk:true, deltaTOk:true, safetyOpen:false,
     alarmMsg:null
   },
@@ -760,6 +781,7 @@ const SCENARIOS = {
     tA_top:20, tA_bot:19,
     acmTemp:56, priorityMsg:null,
     flow:0,
+    co2_rec:20, pt_rec:44, pt_apa:1.6, pt_sursa:2.0, svHpOpen:false,
     srcFlowOk:true, hpOk:true, turOk:true, deltaTOk:true, safetyOpen:false,
     alarmMsg:null
   },
@@ -773,6 +795,22 @@ const SCENARIOS = {
     tA_top:51, tA_bot:45,
     acmTemp:52, priorityMsg:'Cerere ACM activă — pompa caloriferelor e oprită, deci HX-301 nu transferă nimic și tot CO₂-ul de 95 °C ajunge în HX-302, care îl răcește până la ~20 °C cu apă de rețea. Exact aici se vede câștigul variantei B: presiunea optimă scade la 78 bar și COP-ul urcă spre 4. Caloriferele merg din inerția lui T-CAL01 (~90 min).',
     flow:0.9,
+    co2_rec:8, pt_rec:44, pt_apa:1.8, pt_sursa:2.4, svHpOpen:false,
+    srcFlowOk:true, hpOk:true, turOk:true, deltaTOk:true, safetyOpen:false,
+    alarmMsg:null
+  },
+  extrasezon:{
+    label:'Extrasezon 45/35', sub:'curbă după TT-EXT · retur mai rece', running:true,
+    co2_disc:72, co2_afterACM:71, co2_afterHX:40, co2_afterEEV:-2, co2_suction:4,
+    pt_hp:74, pt_lp:38,
+    apaSrcIn:5, apaSrcOut:1,
+    apaIncTur:45, apaIncRetur:35,
+    apaConsTur:45, apaConsRetur:35,
+    tA_top:44, tA_bot:36,
+    acmTemp:60,
+    priorityMsg:'Afară e blând, iar sonda TT-EXT coboară turul la 45 °C și returul la 35 °C. CO₂-ul iese din HX-301 la ~40 °C în loc de 50 °C, presiunea optimă scade de la 92 la ~74 bar, iar COP-ul urcă cu 10–15 %. Cu convertizorul CF-301, compresorul merge continuu la turație redusă în loc să pornească și să se oprească.',
+    flow:0.6,
+    co2_rec:10, pt_rec:45, pt_apa:1.8, pt_sursa:2.4, svHpOpen:false,
     srcFlowOk:true, hpOk:true, turOk:true, deltaTOk:true, safetyOpen:false,
     alarmMsg:null
   },
@@ -786,21 +824,23 @@ const SCENARIOS = {
     tA_top:18, tA_bot:18,
     acmTemp:22, priorityMsg:null,
     flow:0,
+    co2_rec:19, pt_rec:39, pt_apa:1.6, pt_sursa:0.3, svHpOpen:false,
     srcFlowOk:false, hpOk:true, turOk:true, deltaTOk:true, safetyOpen:false,
     alarmMsg:'FT-SURSĂ nu confirmă debit — condiția de pornire PDC nu este îndeplinită (vezi P&ID §Logica de control).'
   },
   alarm_highp:{
-    label:'Alarmă — presiune mare', sub:'PT-HP peste prag → SV-01 deschide', running:false,
+    label:'Alarmă — presiune mare CO₂', sub:'PT-HP peste PSH → compresor oprit', running:false,
     co2_disc:118, co2_afterACM:60, co2_afterHX:52, co2_afterEEV:6, co2_suction:14,
-    pt_hp:142, pt_lp:46,
+    pt_hp:132, pt_lp:46,
     apaSrcIn:5, apaSrcOut:1,
     apaIncTur:68, apaIncRetur:52,
     apaConsTur:64, apaConsRetur:50,
     tA_top:66, tA_bot:53,
     acmTemp:58, priorityMsg:null,
     flow:0.15,
-    srcFlowOk:true, hpOk:false, turOk:true, deltaTOk:true, safetyOpen:true,
-    alarmMsg:'PT-HP peste limita admisă — protecție de suprapresiune activă, SV-01 a deschis și compresorul se oprește.'
+    co2_rec:14, pt_rec:50, pt_apa:2.1, pt_sursa:2.4, svHpOpen:true,
+    srcFlowOk:true, hpOk:false, turOk:true, deltaTOk:true, safetyOpen:false,
+    alarmMsg:'PT-HP a depășit pragul presostatului PSH (120 bar) — compresorul s-a oprit, iar supapa de siguranță SV-HP (130 bar) descarcă CO₂ în exterior. Circuitul de apă nu e afectat: SV-01 rămâne închisă.'
   }
 };
 let scenarioKey = 'nominal';
@@ -831,11 +871,13 @@ function registerEquip(group, data){
   data._pos = group.position.clone();     // cotă de montaj, pentru fișa tehnică
   group.userData.info = data;
   equipRegistry.push(group);
-  gEquipment.add(group);
+  if(!group.parent) gEquipment.add(group);
   if(data.labelPos){
-    const spr = makeSprite([data.tag, data.short||''], {size:12.5, subSize:9.5, worldH:0.11, border:data.borderColor||'rgba(255,255,255,.25)'});
+    const spr = data.small
+      ? makeSprite([data.tag], {size:10, worldH:0.055, border:data.borderColor||'rgba(255,255,255,.25)'})
+      : makeSprite([data.tag, data.short||''], {size:12.5, subSize:9.5, worldH:0.11, border:data.borderColor||'rgba(255,255,255,.25)'});
     spr.position.copy(data.labelPos);
-    gLabelsEquip.add(spr);
+    (data.small ? gLabelsSmall : gLabelsEquip).add(spr);
     group.userData.labelSprite = spr;
   }
 }
@@ -935,7 +977,7 @@ const POS = {
   eev:        V3(1.74, DECK_Y, 1.12),
   gascooler:  V3(2.20, DECK_Y, 1.12),
   pumpPrim:   V3(2.66, DECK_Y, 0.42),
-  vex:        V3(2.72, DECK_Y, 1.78),
+  vex:        V3(3.18, DECK_Y, 0.20),     // pe retur, lângă aspirația P-302
   // single buffer tank for the (small, 3-room) space-heating loop — see
   // 16b below for why this replaced the original 3-tank chain.
   tankA:      V3(3.32, DECK_Y, 1.18),
@@ -947,43 +989,32 @@ const POS = {
   // ACM de 60 °C; caloriferele iau restul.
   hx302:      V3(2.66, DECK_Y, 1.12),
   pumpAcm:    V3(3.88, DECK_Y, 0.42),
-  pumpSec:    V3(4.30, DECK_Y, 0.42),
-  manifold:   V3(4.25, DECK_Y, 1.75),
+  // P-303 stă între T-CAL01 și T-ACM1: ia turul din dreapta rezervorului
+  // și îl duce direct la DIST-01, fără să traverseze rândul din spate.
+  pumpSec:    V3(4.20, DECK_Y, 1.18),
+  manifold:   V3(4.40, DECK_Y, 1.96),     // capetele tur/retur spre calorifere, la marginea din față
   // 2 × 300 l boilere ACM în SERIE, vase ZVELTE (Ø≈500, H≈1,53 m — H/D 3,1):
   // forma contează mai mult decât numărul, un vas scund Ø600 ar pierde ~30 l
   // de capacitate utilă prin amestecare.
   tAcm1:      V3(4.95, DECK_Y, 1.18),
-  tAcm2:      V3(5.57, DECK_Y, 1.18),
-  acmSource:  V3(4.75, DECK_Y, 1.80),
+  tAcm2:      V3(5.65, DECK_Y, 1.18),     // 0,20 m între mantale: loc pentru legătura serie
+  acmSource:  V3(5.60, DECK_Y, 1.95),    // apa rece intră prin față, trece prin grupul de siguranță
+  vexAcm:     V3(4.95, DECK_Y, 1.82),
+  // receiver CO₂ lângă compresor, între refulare și HX-301 (traseu scurt de lichid)
+  receiver:   V3(1.85, DECK_Y, 0.55),
+  oilSep:     V3(1.72, DECK_Y, 0.16),
+  sepLp:      V3(1.46, DECK_Y, 0.86),     // separator de lichid, pe aspirație, între E-301 și compresor     // separator de ulei, în spatele compresorului, lângă refulare
   acmDist:    V3(6.25, DECK_Y, 1.18),
   panel:      V3(6.55, DECK_Y, 0.20),
-  co2bottles: V3(0.24, DECK_Y, 1.80),
-};
-// shared vertical "shelves" the pipe rack routes travel on — three bands
-// that never overlap in Y, so different circuits can never visually cross:
-// low service trench (0.10–0.45), water pipe rack (1.40–1.95), CO2 pipe
-// rack (2.00–2.40). Each individual run also gets its own unique height
-// inside its band, so no two distinct pipes ever share a plane either.
-const SHELF = {
-  // primaryReturn/consumerReturn both cross under the tank row, so they
-  // must stay below y=0.15 (where the insulated tank shells start) —
-  // everything else here is clear of the tanks and just needs to be unique.
-  // srcToEvap must clear the compressor (sits directly in its path, top
-  // ≈0.50) rather than the generic 0.15 tank rule, hence the taller 0.60.
-  primaryReturn:0.12, consumerReturn:0.08, srcToEvap:0.60, gascoolerRetIn:0.34, srcReturn:0.42,
-  topChain:1.46, secSupply:1.60, primaryTur:1.74, secTur:1.88,
-  co2Discharge:2.06, co2Suction:2.36,
-  // HX-301 / V-301 / E-301 sit within ~1m of each other — routing those
-  // two short jumpers all the way to the high CO2 rack made them vanish
-  // above the frame in a normal view. Keep them short and local instead:
-  // co2LocalA stays below both BPHE bodies, co2LocalB clears the
-  // evaporator's own top (1.13) since it sweeps past it in X.
-  co2LocalA:0.60, co2LocalB:1.20,
+  drive:      V3(5.95, DECK_Y, 0.20),     // convertizor de frecventa, langa tablou
+  extSensor:  V3(6.60, DECK_Y, 1.55),     // sonda de temperatura exterioara
+  co2bottles: V3(0.40, DECK_Y, 0.12),     // lângă compresor, aproape de racordul RS-CO2
 };
 
 /* ---------------------------------------------------------------------
    10. STRUCTURE — skid deck / frame / pipe-rack posts
 --------------------------------------------------------------------- */
+const STRUCT_SEGS = [];   // rails / posts / braces, as capsules, for the clearance check
 (function buildStructure(){
   const DX0=-0.15, DX1=6.85, DZ0=-0.05, DZ1=2.10;
   const deck = box(DX1-DX0, 0.05, DZ1-DZ0, MAT.deck);
@@ -1000,6 +1031,7 @@ const SHELF = {
   perim.forEach(([x1,z1,x2,z2])=>{
     const seg = cylBetween(V3(x1,railY,z1), V3(x2,railY,z2), 0.02, MAT.frameDark, 6);
     if(seg) gStructure.add(seg);
+    STRUCT_SEGS.push({a:V3(x1,railY,z1), b:V3(x2,railY,z2), r:0.02});
   });
 
   // Elevated pipe-rack gantry: two tiers of longitudinal rails, one just
@@ -1007,16 +1039,25 @@ const SHELF = {
   // visible structural reason the pipe runs travel where they do.
   function rackSpan(xFrom, xTo, z, y, postEvery){
     const rail = cylBetween(V3(xFrom,y,z), V3(xTo,y,z), 0.022, MAT.frame, 8);
-    gStructure.add(rail);
+    rail.userData.rack = true; gStructure.add(rail);
+    STRUCT_SEGS.push({a:V3(xFrom,y,z), b:V3(xTo,y,z), r:0.022});
     for(let x=xFrom; x<=xTo+1e-6; x+=postEvery){
       const post = cylBetween(V3(x,0,z), V3(x,y,z), 0.02, MAT.frame, 8);
-      gStructure.add(post);
-      const brace = cylBetween(V3(x,y,z), V3(x+postEvery*0.5,y-0.10,z), 0.010, MAT.frameDark, 6);
-      if(x+postEvery<=xTo+1e-6) gStructure.add(brace);
+      post.userData.rack = true; gStructure.add(post);
+      STRUCT_SEGS.push({a:V3(x,0,z), b:V3(x,y,z), r:0.02});
+      // knee brace: from the post, 0,15 m below the rail, up to the rail
+      const kA = V3(x, y-0.15, z), kB = V3(x+Math.min(0.15, postEvery*0.3), y-0.022, z);
+      const brace = cylBetween(kA, kB, 0.010, MAT.frameDark, 6);
+      if(x+postEvery<=xTo+1e-6){ brace.userData.rack = true; gStructure.add(brace); STRUCT_SEGS.push({a:kA, b:kB, r:0.010}); }
     }
   }
-  rackSpan(0.95, 6.00, 1.42, 1.34, 1.10);   // water-circuit rack (below 1.46–1.88 shelves)
-  rackSpan(1.05, 2.90, 1.42, 1.98, 0.70);   // CO2 cluster rack (below 2.06–2.36 shelves)
+  // Two pipe supports, each rail sitting right under the run it carries
+  // (rail top = pipe bottom): the primary TUR at y 1.74 / z 1.515 and the
+  // ACM charge line at y 2.02 / z 1.61. Posts are placed clear of the tanks.
+  // 6 mm left under each pipe for the clamp / pipe shoe; rails stop short of
+  // the fittings mounted on those runs (AER-01, AER-ACM).
+  rackSpan(2.45, 3.20, 1.515, 1.686, 0.75);  // sub turul primar HX-301 → T-CAL01
+  rackSpan(2.90, 5.30, 1.61, 1.966, 1.20);   // sub bucla de încărcare HX-302 → T-ACM2
 
   // small feet under the deck
   [[DX0+0.2,DZ0+0.2],[DX1-0.2,DZ0+0.2],[DX0+0.2,DZ1-0.2],[DX1-0.2,DZ1-0.2],[2.5,DZ0+0.2],[2.5,DZ1-0.2],[4.8,DZ0+0.2],[4.8,DZ1-0.2]].forEach(([x,z])=>{
@@ -1056,15 +1097,18 @@ function buildCompressor(origin){
   registerEquip(g, {
     tag:'C-301', alt:'C-101', name:'Compresor CO₂ transcritic',
     short:'BITZER 4JTC-15K-40P',
-    desc:'Comprimă CO₂ de la presiunea LP (30–45 bar) la presiunea HP (80–95 bar, zonă transcritică). Protejat de presostate HP/LP și releu termic.',
+    desc:'Compresor semiermetic cu pistoane. Comprimă CO₂ de la presiunea LP (30–45 bar) la HP (80–95 bar, zonă transcritică). Motorul e răcit de gazul aspirat (vaporii reci din E-301 trec prin bobinaj înainte de cilindri), iar căldura pleacă cu gazul refulat spre gas coolere — de aceea supraîncălzirea pe aspirație (V-301) și temperatura de refulare (TT CO₂ HP) sunt critice. Uleiul doar unge: cel antrenat de gaz e reținut în OS-C301 și readus în carter; rezistența RC-C301 îl ține cald la oprire. Protecții: PSH/PSL, TS-01, senzori PTC în bobinaj, LS-C301.',
     specs:[['Debit volumetric','9,2 m³/h @ 50 Hz'],['Turație','1450 rpm'],['Curent nominal','31 A'],['Presiuni max.','75 / 130 bar'],['Alimentare','400 V, 3~'],['Putere el. absorbită','4,8–5,5 kW']],
     trend:[{key:'co2_disc', label:'T° refulare', unit:'°C', fluid:'co2'}, {key:'co2_suction', label:'T° aspirație', unit:'°C', fluid:'co2'}],
     labelPos: origin.clone().add(V3(0,0.62,0)), borderColor:'rgba(60,209,122,.55)'
   });
 
+  // racord retur ulei în carter, pe fața din spate, jos
+  const oilStub = cylBetween(V3(-0.08,0.14,-0.18), V3(-0.08,0.14,-0.23), 0.011, MAT.brass, 10); if(oilStub) g.add(oilStub);
   return { group:g, ports:{
     discharge: origin.clone().add(dischargeLocal),
-    suction:   origin.clone().add(suctionLocal.clone().add(V3(0,0.09,0)))
+    suction:   origin.clone().add(suctionLocal.clone().add(V3(0,0.09,0))),
+    oilRet:    origin.clone().add(V3(-0.08,0.14,-0.23))
   }};
 }
 
@@ -1116,8 +1160,8 @@ function buildEEV(origin){
   registerEquip(g, {
     tag:'V-301', alt:'V-EXP', name:'Supapă de expansiune electronică CO₂',
     short:'comandă 0–10 V / stepper',
-    desc:'Laminează CO₂ de la presiunea HP la presiunea LP, la intrarea în evaporator. Deschiderea este modulată electronic. Este exact granița termodinamică a ciclului: înainte de vană, CO₂ e fluid supracritic, omogen (peste 73,8 bar / 31,1°C — fără fază lichidă distinctă); după laminare, presiunea scade sub pragul critic și CO₂ devine amestec bifazic lichid-vapori, ca într-un circuit frigorific clasic.',
-    specs:[['Comandă','0–10 V (sau stepper)'],['Presiune max.','≥ 120 bar'],['Regim înainte / după','supracritic → bifazic subcritic']],
+    desc:'Supapa de expansiune electronică (EEV): ia lichidul din receiver (≈45 bar), trecut prin filtrul deshidratator și vizor, și îl laminează până la presiunea de evaporare (≈35 bar), dozând exact cât CO₂ intră în E-301. Se reglează după supraîncălzire (8–12 K), calculată din PT LP și TT CO₂ LP. Granița supracritic → subcritic e mai devreme, la HP-REG; aici tot circuitul e deja subcritic.',
+    specs:[['Comandă','0–10 V (sau stepper)'],['Presiune max.','≥ 120 bar'],['Reglaj','supraîncălzire 8–12 K']],
     labelPos: origin.clone().add(V3(0,baseY+0.28,0)), borderColor:'rgba(224,120,47,.5)'
   });
 
@@ -1159,8 +1203,33 @@ function buildYFilter(origin){
   return { group:g, ports:{ in: origin.clone().add(V3(-0.07,y,0)), out: origin.clone().add(V3(0.07,y,0)) } };
 }
 
-// -- 11.6 Buffer tank T-30x ---------------------------------------------
-function buildTank(origin, tagInfo, dims){
+// -- 11.6 Tanks / vessels with real nozzles -------------------------------
+// Each connection is a separate nozzle with its own height and angle round
+// the shell (ang 0 = +X / dreapta, 90 = +Z / față, 180 = stânga, 270 = spate),
+// or a stub on the top dome. ports[name] = flange face, dirs[name] = the
+// direction a pipe must leave it in.
+function addNozzles(g, origin, r, baseY, h, nz, domeScale){
+  const ports={}, dirs={};
+  Object.keys(nz||{}).forEach(k=>{
+    const n=nz[k];
+    if(n.top){
+      const dx=n.dx||0, dz=n.dz||0, rr=Math.hypot(dx,dz);
+      const yS = baseY+h + domeScale*Math.sqrt(Math.max(0, r*r-rr*rr));
+      const stub = cyl(0.018,0.018,0.05,MAT.steelDark,10); stub.position.set(dx,yS+0.01,dz); g.add(stub);
+      ports[k]=origin.clone().add(V3(dx,yS+0.035,dz)); dirs[k]=V3(0,1,0);
+    } else {
+      const a=n.ang*Math.PI/180, d=V3(Math.cos(a),0,Math.sin(a));
+      const L=r+(n.len||0.07), y=baseY+n.h;
+      const stub=cylBetween(d.clone().multiplyScalar(r-0.01).add(V3(0,y,0)), d.clone().multiplyScalar(L).add(V3(0,y,0)), 0.02, MAT.steelDark, 12);
+      if(stub) g.add(stub);
+      const fl=cyl(0.03,0.03,0.012,MAT.flange,14); fl.position.copy(d.clone().multiplyScalar(L-0.008).add(V3(0,y,0)));
+      fl.quaternion.setFromUnitVectors(V3(0,1,0), d); g.add(fl);
+      ports[k]=origin.clone().add(d.clone().multiplyScalar(L)).add(V3(0,y,0)); dirs[k]=d;
+    }
+  });
+  return {ports, dirs};
+}
+function buildTank(origin, tagInfo, dims, nz){
   const g = new THREE.Group(); g.position.copy(origin);
   // r/h sunt cotele reale ale mantalei: raportul H/D decide cât de bine
   // stratifică vasul, deci nu sunt doar cosmetice.
@@ -1182,54 +1251,100 @@ function buildTank(origin, tagInfo, dims){
   const band = cyl(r*1.005,r*1.005,0.05,new THREE.MeshStandardMaterial({color:0x2f6fb0,roughness:0.5}),28);
   band.position.y = legH+h*0.52; g.add(band);
 
-  const vent = airVent(); vent.position.set(r*0.45,legH+h+0.005,r*0.30); g.add(vent);
-  const drain = ballValve(MAT.handleRed); drain.rotation.y=Math.PI/2; drain.position.set(r+0.02,legH+0.02,0); drain.rotation.z=Math.PI/2; g.add(drain);
+  const nzl = addNozzles(g, origin, r, legH, h, nz, 0.5);
+  registerEquip(g, Object.assign({labelPos:origin.clone().add(V3(0,legH+h+0.26,0)), borderColor:'rgba(111,176,240,.5)'}, tagInfo));
 
-  const topStub = cyl(0.02,0.02,0.05,MAT.steelDark,10); topStub.position.set(0,legH+h+0.02,0); g.add(topStub);
-  const botStub = cyl(0.02,0.02,0.05,MAT.steelDark,10); botStub.position.set(0,legH-0.02,0); g.add(botStub);
-
-  registerEquip(g, Object.assign({labelPos:origin.clone().add(V3(0,legH+h+0.22,0)), borderColor:'rgba(111,176,240,.5)'}, tagInfo));
-
-  return { group:g, bandTop, bandBot, ports:{
-    top: origin.clone().add(V3(0,legH+h+0.045,0)),
-    bottom: origin.clone().add(V3(0,legH-0.045,0))
-  }};
+  return { group:g, bandTop, bandBot, origin:origin.clone(), r, h, legH, ports:nzl.ports, dirs:nzl.dirs };
 }
 
-// -- 11.7 Expansion vessel VEX-01 / SV-01 -------------------------------
-function buildVex(origin){
+// -- 11.6a Oil separator on the compressor discharge ------------------------
+function buildOilSeparator(origin){
   const g = new THREE.Group(); g.position.copy(origin);
-  const r=0.10,h=0.24,legH=0.55;
-  const stem = cyl(0.016,0.016,legH,MAT.steelDark,10); stem.position.y=legH/2; g.add(stem);
-  const body = cyl(r,r,h,MAT.gaugeBody,20); body.position.y=legH+h/2; g.add(body);
-  const dome = sph(r,new THREE.MeshStandardMaterial({color:0xb23a2f, metalness:0.3, roughness:0.4}),16,12); dome.scale.y=0.6; dome.position.y=legH+h+0.02; g.add(dome);
-  const botDome = sph(r,MAT.gaugeBody,16,12); botDome.scale.y=0.6; botDome.rotation.x=Math.PI; botDome.position.y=legH; g.add(botDome);
+  const r=0.06, h=0.50, legH=0.10;
+  const mat = new THREE.MeshStandardMaterial({color:0x5b6570, metalness:0.6, roughness:0.35});
+  [0,120,240].forEach(a=>{ const rad=a*Math.PI/180; const leg=cyl(0.009,0.009,legH,MAT.frameDark,8); leg.position.set(Math.cos(rad)*0.04,legH/2,Math.sin(rad)*0.04); g.add(leg); });
+  const body=cyl(r,r,h,mat,20); body.position.y=legH+h/2; g.add(body);
+  const top=sph(r,mat,16,10); top.scale.y=0.5; top.position.y=legH+h; g.add(top);
+  const bot=sph(r,mat,16,10); bot.scale.y=0.5; bot.rotation.x=Math.PI; bot.position.y=legH; g.add(bot);
+  const band=cyl(r*1.02,r*1.02,0.03,new THREE.MeshStandardMaterial({color:0xc9932f,roughness:0.5}),20); band.position.y=legH+h*0.5; g.add(band);
+  const nzl = addNozzles(g, origin, r, legH, h, { in:{ang:180,h:0.45,len:0.05}, gas:{top:true}, oil:{ang:180,h:0.04,len:0.05} }, 0.5);
   registerEquip(g, {
-    tag:'VEX-01', alt:'VEX-401', name:'Vas de expansiune — circuit încălzire',
-    desc:'Compensează dilatarea termică a apei din circuitul primar de încălzire (55/45°C, urcat temporar la 65 °C la încărcarea ACM).',
-    specs:[['Circuit','apă încălzire 45–65 °C']],
-    labelPos: origin.clone().add(V3(0,legH+h+0.22,0)), borderColor:'rgba(111,176,240,.5)'
+    tag:'OS-C301', name:'Separator de ulei — refulare compresor', short:'cu plutitor, CO₂ transcritic',
+    desc:'Primul echipament după compresor. Gazul refulat intră lateral sus, își pierde viteza și picăturile de ulei antrenate cad la bază; gazul curat iese pe capac spre HX-302. Uleiul adunat jos se întoarce în carterul compresorului prin filtru, vană electromagnetică și vizor. Fără el, uleiul ar ajunge în gas coolere și în receiver și compresorul ar rămâne fără ungere. Model și volum de confirmat cu BITZER pentru 4JTC-15K.',
+    specs:[['PS','≥ 130 bar (parte HP)'],['Racorduri','intrare lateral sus · gaz pe capac · ulei jos'],['Tip ulei','conform fișei BITZER (POE pentru CO₂)']],
+    labelPos: origin.clone().add(V3(0,legH+h+0.26,0)), borderColor:'rgba(201,147,47,.55)'
   });
-  return { group:g, ports:{ in: origin.clone().add(V3(0,0,0)) } };
+  return { group:g, ports:nzl.ports, dirs:nzl.dirs };
 }
-function buildSafety(origin){
+
+// -- 11.6a2 Separator de lichid pe aspirație (acumulator LP) ---------------
+function buildAccumulator(origin){
   const g = new THREE.Group(); g.position.copy(origin);
-  const body = cyl(0.022,0.022,0.08,MAT.brass,12); body.position.y=0.04; g.add(body);
-  const top = cyl(0.026,0.018,0.03,MAT.brass.clone(),12); top.position.y=0.095; g.add(top);
-  // discharge stub: points down toward the drain line, so the valve reads
-  // as "vents to a drain when it opens" rather than a dead end in mid-air.
-  const dischargeLocal = V3(0,-0.06,0.02);
-  const outlet = cylBetween(V3(0,0.0,0), dischargeLocal, 0.011, MAT.steelDark, 8);
-  if(outlet) g.add(outlet);
-  g.userData.indicator = top;
+  const r=0.07, h=0.34, legH=0.10;
+  const mat = new THREE.MeshStandardMaterial({color:0x8d949b, metalness:0.6, roughness:0.35});
+  [0,120,240].forEach(a=>{ const rad=a*Math.PI/180; const leg=cyl(0.009,0.009,legH,MAT.frameDark,8); leg.position.set(Math.cos(rad)*0.05,legH/2,Math.sin(rad)*0.05); g.add(leg); });
+  const body=cyl(r,r,h,mat,22); body.position.y=legH+h/2; g.add(body);
+  const top=sph(r,mat,16,10); top.scale.y=0.5; top.position.y=legH+h; g.add(top);
+  const bot=sph(r,mat,16,10); bot.scale.y=0.5; bot.rotation.x=Math.PI; bot.position.y=legH; g.add(bot);
+  const band=cyl(r*1.02,r*1.02,0.03,new THREE.MeshStandardMaterial({color:0x3fd0e6,roughness:0.5}),22); band.position.y=legH+h*0.5; g.add(band);
+  const nzl = addNozzles(g, origin, r, legH, h, { in:{top:true,dz:0.045}, out:{top:true,dz:-0.045} }, 0.5);
   registerEquip(g, {
-    tag:'SV-01', alt:'SV-401', name:'Supapă de siguranță 3 bar',
-    desc:'Protejează circuitul de încălzire la suprapresiune. Închisă în funcționare normală — deschide doar la 3 bar și evacuează spre pâlnia de golire de mai jos; nu face parte din bucla activă de curgere.',
-    specs:[['Presiune deschidere','3 bar'],['DN','15']],
-    trend:[{key:'apaIncTur', label:'T° circuit supravegheat', unit:'°C', fluid:'apa'}],
-    labelPos: origin.clone().add(V3(0,0.24,0)), borderColor:'rgba(224,120,47,.5)'
+    tag:'SEP-LP', name:'Separator de lichid — aspirație', short:'acumulator pe linia LP',
+    desc:'Vas pe aspirație, între E-301 și compresor: dacă din evaporator scapă picături de lichid (la pornire, la schimbarea bruscă de regim sau dacă V-301 deschide prea mult), ele cad aici și se evaporă, iar compresorul primește numai vapori. Lichidul nu se comprimă — o lovitură hidraulică sparge supapele. Apare desenat în figurile 1 și 2 din documentul F, lângă TT-ASP; în text e trecut doar ca „eventual".',
+    specs:[['Rol','protecția compresorului la lichid'],['Racorduri','intrare și ieșire pe capac'],['PS','≥ 90 bar'],['Volum','≈ 1,5 l (de dimensionat pe încărcătură)']],
+    trend:[{key:'co2_suction', label:'T° aspirație', unit:'°C', fluid:'co2'}],
+    labelPos: origin.clone().add(V3(0,legH+h+0.26,0)), borderColor:'rgba(224,120,47,.5)'
   });
-  return { group:g, ports:{ in: origin.clone().add(V3(0,0,0)), discharge: origin.clone().add(dischargeLocal) } };
+  return { group:g, ports:nzl.ports, dirs:nzl.dirs };
+}
+
+// -- 11.6b CO₂ receiver (separator de faze) -------------------------------
+function buildReceiver(origin){
+  const g = new THREE.Group(); g.position.copy(origin);
+  const r=0.09, h=0.46, legH=0.10;
+  const mat = new THREE.MeshStandardMaterial({color:0x7d858c, metalness:0.6, roughness:0.35});
+  [0,120,240].forEach(a=>{
+    const rad=a*Math.PI/180;
+    const leg=cyl(0.01,0.01,legH,MAT.frameDark,8); leg.position.set(Math.cos(rad)*0.06,legH/2,Math.sin(rad)*0.06+0.0); g.add(leg);
+  });
+  const body=cyl(r,r,h,mat,24); body.position.y=legH+h/2; g.add(body);
+  const top=sph(r,mat,18,12); top.scale.y=0.5; top.position.y=legH+h; g.add(top);
+  const bot=sph(r,mat,18,12); bot.scale.y=0.5; bot.rotation.x=Math.PI; bot.position.y=legH; g.add(bot);
+  const plate=cyl(r*1.01,r*1.01,0.04,new THREE.MeshStandardMaterial({color:0xe0782f,roughness:0.5}),24); plate.position.y=legH+h*0.55; g.add(plate);
+  const nzl = addNozzles(g, origin, r, legH, h, {
+    in:{ang:0,h:0.38,len:0.06}, liq:{ang:90,h:0.06,len:0.06}, gas:{top:true,dz:0.07}, sv:{top:true,dz:-0.05}
+  }, 0.5);
+  registerEquip(g, {
+    tag:'REC-CO2', name:'Receiver CO₂ (separator de faze)', short:'vas presiune intermediară',
+    desc:'Vas între HP-REG și V-301 (doc. F: GAS COOLER → RECEIVER → FILTRU-DESHIDRATOR → EEV). Separă lichidul de gazul format la laminare și preia diferența de încărcătură dintre moduri: în modul ACM CO₂-ul iese din HX-302 la ~20 °C, în modul calorifere din HX-301 la ~50 °C — densități foarte diferite, deci cantitatea de agent din gas coolere variază mult. Intrarea e lateral sus, lichidul pleacă pe la bază spre FD-CO2 și V-301, gazul din capac trece prin V-FGB spre aspirație; pe capac stă și SV-REC.',
+    specs:[['Presiune de lucru','≈ 40–50 bar'],['PS','≥ 90 bar (de confirmat cu furnizorul)'],['Volum','≈ 4–6 l (de dimensionat pe încărcătură)']],
+    trend:[{key:'pt_rec', label:'P receiver', unit:'bar', fluid:'co2'}],
+    labelPos: origin.clone().add(V3(0,legH+h+0.30,0)), borderColor:'rgba(224,120,47,.5)'
+  });
+  return { group:g, ports:nzl.ports, dirs:nzl.dirs };
+}
+
+// -- 11.7 Expansion vessels (heating VEX-01 / sanitary VEX-ACM) ------------
+// Connection nipple at the bottom, vessel above it; `stand` = floor tripod,
+// otherwise it hangs on its tee like a small sanitary vessel does.
+function buildVex(origin, info, o){
+  o = Object.assign({r:0.10, h:0.24, nippleY:0.20, stand:true, color:0xb23a2f}, o||{});
+  const g = new THREE.Group(); g.position.copy(origin);
+  const r=o.r, h=o.h, y0=o.nippleY, c=y0+0.05+r*0.6;
+  const nip = cyl(0.014,0.014,0.05,MAT.brass,10); nip.position.y=y0+0.025; g.add(nip);
+  const shell = new THREE.MeshStandardMaterial({color:o.color, metalness:0.3, roughness:0.45});
+  const botDome = sph(r,shell,16,12); botDome.scale.y=0.6; botDome.rotation.x=Math.PI; botDome.position.y=c; g.add(botDome);
+  const body = cyl(r,r,h,shell,20); body.position.y=c+h/2; g.add(body);
+  const dome = sph(r,shell,16,12); dome.scale.y=0.6; dome.position.y=c+h; g.add(dome);
+  const schrader = cyl(0.01,0.01,0.02,MAT.steelDark,8); schrader.position.y=c+h+r*0.6+0.008; g.add(schrader);
+  if(o.stand){
+    [30,150,270].forEach(a=>{
+      const rad=a*Math.PI/180, x=Math.cos(rad)*r*0.9, z=Math.sin(rad)*r*0.9;
+      const leg=cylBetween(V3(x,0,z), V3(x*0.8,c,z*0.8), 0.009, MAT.frameDark, 6); if(leg) g.add(leg);
+    });
+  }
+  registerEquip(g, Object.assign({labelPos:origin.clone().add(V3(0,c+h+r*0.6+0.16,0)), borderColor:'rgba(111,176,240,.5)'}, info));
+  return { group:g, ports:{ in: origin.clone().add(V3(0,y0,0)) } };
 }
 
 function buildDrainFunnel(origin, tag, desc){
@@ -1266,25 +1381,6 @@ function buildExternalSource(origin){
   return { group:g, ports:{ top: origin.clone().add(V3(0,0.032,0)) } };
 }
 
-// Make-up water valve for the SEALED heating loop (gas cooler <-> tanks
-// <-> consumers). Not named in the source documentation (only the drain
-// valves D-01/D-02 and VT301-303 are) — added for completeness: every
-// real sealed circuit needs a one-time fill / occasional top-up point,
-// normally closed, tied here to the primary return near VEX-01.
-function buildFillValve(origin){
-  const g = new THREE.Group(); g.position.copy(origin);
-  const v = ballValve(MAT.handleRed); g.add(v);
-  const check = cyl(0.016,0.016,0.03,MAT.brass,10); check.rotation.z=Math.PI/2; check.position.set(-0.06,0,0); g.add(check);
-  const cap = cyl(0.018,0.018,0.012,MAT.steelDark,10); cap.rotation.z=Math.PI/2; cap.position.set(-0.09,0,0); g.add(cap);
-  registerEquip(g, {
-    tag:'V-UMPLERE', name:'Robinet umplere / adaos apă (circuit sigilat)',
-    desc:'Nu apare explicit în documentația sursă — adăugat pentru completitudine: orice circuit sigilat (gaz-cooler ↔ rezervoare ↔ consumatori) are nevoie de un punct de umplere inițială și completare ocazională, racordat la apă potabilă/utilitară. Normal închis; nu circulă apă prin el în funcționare curentă. Verifică poziția reală față de proiect.',
-    specs:[['Stare normală','închis'],['Rol','umplere inițială + completare presiune']],
-    labelPos: origin.clone().add(V3(0,0.14,0)), borderColor:'rgba(154,167,181,.4)'
-  });
-  return { group:g, ports:{ in: origin.clone().add(V3(-0.11,0,0)), out: origin.clone().add(V3(0.06,0,0)) } };
-}
-
 // -- 11.8 CO2 charge cylinders (auxiliary, decorative) -------------------
 function buildCO2Bottles(origin){
   const g = new THREE.Group(); g.position.copy(origin);
@@ -1297,11 +1393,11 @@ function buildCO2Bottles(origin){
   });
   registerEquip(g, {
     tag:'Butelii CO₂', name:'Rezervă / încărcare CO₂ (auxiliar)',
-    desc:'Butelii de dioxid de carbon pentru încărcarea inițială și completarea agentului frigorific R744. Nu fac parte din bucla activă de refrigerare — conectate doar prin racord de service.',
+    desc:'Două butelii de CO₂ (R744) pentru încărcarea inițială și completarea agentului. Robinetele lor sunt legate printr-un colector comun la linia de încărcare: manometru PI-INC → robinet V-INC (normal închis) → clapetă NRV-INC → racordul RS-CO2 de pe aspirația compresorului. În funcționare normală robinetele buteliilor și V-INC stau închise; se deschid doar la încărcare, cu compresorul pornit și urmărind presiunea pe PT LP. Buteliile trebuie fixate cu lanț de perete.',
     specs:[['Rol','încărcare / service'],['Fluid','CO₂ (R744) lichid']],
-    labelPos: origin.clone().add(V3(0.12,1.05,0)), borderColor:'rgba(224,120,47,.4)'
+    labelPos: origin.clone().add(V3(0.12,1.30,0)), borderColor:'rgba(224,120,47,.4)'
   });
-  return { group:g };
+  return { group:g, ports:{ b1: origin.clone().add(V3(0,0.965,0)), b2: origin.clone().add(V3(0.24,0.965,0)) } };
 }
 
 // -- 11.9 Electrical / PLC panel -----------------------------------------
@@ -1315,12 +1411,54 @@ function buildPanel(origin){
   }
   const plate = box(0.3,0.05,0.002, new THREE.MeshStandardMaterial({color:0xe7e4d8}));
   plate.position.set(0,0.2,0.101); g.add(plate);
+  const estopBase = cyl(0.03,0.03,0.012,new THREE.MeshStandardMaterial({color:0xf2c200,roughness:0.5}),16);
+  estopBase.rotation.x=Math.PI/2; estopBase.position.set(0.14,0.60,0.106); g.add(estopBase);
+  const estop = cyl(0.022,0.022,0.02,MAT.glowRed,16); estop.rotation.x=Math.PI/2; estop.position.set(0.14,0.60,0.12); g.add(estop);
   registerEquip(g, {
     tag:'TE-01', name:'Tablou electric + PLC',
-    desc:'Tablou de forță și automatizare pentru compresor, pompe și instrumentație. Controler programabil (PLC WAGO PFC200 / SPLC-64) și module RS-485 pentru senzorii de temperatură și presiune.',
+    desc:'Tablou de forță și automatizare pentru compresor, pompe (P-301, P-302, P-303, P-ACM), vanele comandate (HP-REG, V-301, V-FGB, MV-ACM) și instrumentație. PLC WAGO PFC200, driver EEV, buton de oprire de urgență pe ușă (doc. F: EM-STOP). Lanțul de siguranță PSH / PSL / TS-01 taie compresorul direct, independent de PLC. Ieșirea analogică AO-MOD-PDC (doc. A3.2) e prevăzută pentru un convertizor de frecvență pe compresor, dar convertizorul nu e încă ales — fără el, compresorul de 14–16 kW pornеște și se oprește des pe încălzire, unde cererea e de 2–5 kW.',
     specs:[['Alimentare','400 V, 3~ / 230 V'],['Comunicație','RS-485 Modbus']],
     labelPos: origin.clone().add(V3(0,0.98,0)), borderColor:'rgba(154,167,181,.5)'
   });
+}
+
+// -- 11.9b Convertizor de frecventa (dulap separat, langa TE-01) ----------
+function buildDrive(origin){
+  const g = new THREE.Group(); g.position.copy(origin);
+  const cab = box(0.34,0.55,0.18,MAT.panelBody); cab.position.set(0,0.325,0); g.add(cab);
+  const door = box(0.30,0.50,0.02,MAT.panelDoor); door.position.set(0,0.325,0.10); g.add(door);
+  for(let i=0;i<5;i++){ const fin=box(0.22,0.006,0.012,MAT.compDetail); fin.position.set(0,0.50-i*0.025,0.112); g.add(fin); }
+  const disp = box(0.11,0.05,0.004, new THREE.MeshStandardMaterial({color:0x123a2a, emissive:0x0e5a2c, emissiveIntensity:0.5}));
+  disp.position.set(0,0.22,0.112); g.add(disp);
+  const knob = cyl(0.014,0.014,0.012,MAT.steelDark,12); knob.rotation.x=Math.PI/2; knob.position.set(0.09,0.22,0.108); g.add(knob);
+  const feet = box(0.34,0.05,0.18,MAT.frameDark); feet.position.set(0,0.025,0); g.add(feet);
+  // tub de legatura spre tabloul TE-01
+  const duct = cylBetween(V3(0.17,0.38,0), V3(0.35,0.38,0), 0.022, MAT.frameDark, 10); if(duct) g.add(duct);
+  registerEquip(g, {
+    tag:'CF-301', name:'Convertizor de frecvență — compresor C-301', short:'modulare putere 30–100 %',
+    desc:'Reglează turația compresorului, în loc să îl pornească și să îl oprească. Compresorul de 14–16 kW e ales pentru vârful de apă caldă menajeră, dar încălzirea celor 3 camere cere doar 2–5 kW: fără modulație ar porni și s-ar opri des, ceea ce taie randamentul și uzează compresorul. La încălzire merge la 30–50 % din turație, continuu; la încărcarea boilerelor urcă la putere maximă. Comandat de PLC prin ieșirea analogică AO-MOD-PDC (doc. A3.2). Se montează lângă tablou, cu filtru de rețea și cablu ecranat spre motor.',
+    specs:[['Putere','conform motorului C-301 (400 V, 31 A)'],['Comandă','0–10 V de la PLC (AO-MOD-PDC)'],['Domeniu turație','30–100 %'],['Câștig estimat','10–20 % sezonier']],
+    labelPos: origin.clone().add(V3(0,0.74,0)), borderColor:'rgba(154,167,181,.5)'
+  });
+  return { group:g };
+}
+
+// -- 11.9c Sonda de temperatura exterioara --------------------------------
+function buildExtSensor(origin){
+  const g = new THREE.Group(); g.position.copy(origin);
+  const post = cylBetween(V3(0,0,0), V3(0,0.62,0), 0.016, MAT.frameDark, 10); if(post) g.add(post);
+  const base = cyl(0.05,0.05,0.02,MAT.frameDark,14); base.position.y=0.01; g.add(base);
+  const body = cyl(0.035,0.035,0.07,new THREE.MeshStandardMaterial({color:0xe7e4d8, roughness:0.6}),16);
+  body.position.y=0.66; g.add(body);
+  const hood = cyl(0.042,0.042,0.012,MAT.steelDark,16); hood.position.y=0.70; g.add(hood);
+  registerEquip(g, {
+    tag:'TT-EXT', name:'Sondă de temperatură exterioară', short:'curbă de încălzire',
+    desc:'Măsoară temperatura de afară și, după o curbă de încălzire, stabilește cât de cald trebuie să fie turul spre calorifere. La −15 °C (zona II, Băicoi) turul urcă la 55 °C, iar la +8 °C coboară spre 40 °C. Contează pentru că temperatura de RETUR decide cât de rece iese CO₂-ul din HX-301, deci COP-ul: fiecare grad în minus pe retur înseamnă aproximativ 1,5–2 % câștig. Se montează pe fațada nordică a clădirii, ferită de soare — în machetă e desenată la marginea platformei doar ca reper.',
+    specs:[['Tip','sondă pasivă (NTC / Pt1000)'],['Montaj','fațadă nordică, la ≥2,5 m'],['Rol','curbă de încălzire pentru turul de la P-303'],['Regimuri','55/45 la −15 °C · 45/35 în extrasezon']],
+    trend:[{key:'apaConsRetur', label:'T° retur calorifere', unit:'°C', fluid:'apa'}],
+    labelPos: origin.clone().add(V3(0,0.88,0)), borderColor:'rgba(111,176,240,.5)'
+  });
+  return { group:g };
 }
 
 // -- 11.10b ACM (domestic hot water) utility connections ------------------
@@ -1334,7 +1472,7 @@ function buildColdInlet(origin){
   const shaft = cyl(0.035,0.035,0.4,MAT.frameDark,14); shaft.position.y=-0.2; g.add(shaft);
   registerEquip(g, {
     tag:'APĂ RECE', name:'Racord apă rece potabilă (rețea)',
-    desc:'Intrarea de apă rece potabilă din rețeaua clădirii — alimentează baza boilerului T-ACM pe măsură ce se consumă apă caldă. Presiune de rețea, circuit deschis — nu se amestecă niciodată cu apa din bucla sigilată de încălzire.',
+    desc:'Intrarea de apă rece potabilă din rețeaua clădirii. Trece prin grupul de siguranță (V-AR → RP-AR → NRV-AR → VEX-ACM / SV-ACM) și intră în baza lui T-ACM1 pe măsură ce se consumă apă caldă. Nu se amestecă niciodată cu apa din bucla închisă de încălzire.',
     specs:[['Fluid','apă potabilă'],['Presiune','presiune rețea (deschis)']],
     labelPos: origin.clone().add(V3(0,0.18,0)), borderColor:'rgba(111,176,240,.5)'
   });
@@ -1354,39 +1492,45 @@ function buildAcmDist(origin){
   });
   registerEquip(g, {
     tag:'DIST-ACM', name:'Distribuție ACM → 3 dușuri + 2 chiuvete',
-    desc:'Colector de apă caldă menajeră către punctele de consum din vestiar, cu vană de amestec termostatică (protecție opărire) chiar la ieșirea din colector. Volumul boilerului și puterea schimbătorului sunt încă de dimensionat — vezi fișa T-ACM.',
+    desc:'Colector de apă caldă menajeră către punctele de consum din vestiar, cu vană de amestec termostatică (protecție la opărire) chiar la ieșirea din colector. Apa vine din capacul lui T-ACM2. Puterea lui HX-302 și debitul P-ACM sunt încă de dimensionat.',
     specs:[['Puncte consum','3 dușuri + 2 chiuvete'],['Livrare','~40 °C (amestec)']],
     trend:[{key:'acmTemp', label:'T° boiler ACM', unit:'°C', fluid:'apa'}],
     labelPos: origin.clone().add(V3(0.12,baseY+0.20,0)), borderColor:'rgba(111,176,240,.5)'
   });
-  return { group:g, ports:{ hotIn: origin.clone().add(V3(0,baseY+0.10,0)) } };
+  return { group:g, ports:{ hotIn: origin.clone().add(V3(0,baseY+0.12,0)) } };
 }
 
-// -- 11.10 Consumer manifold ----------------------------------------------
+// -- 11.10 DIST-01: plecarea / întoarcerea apei spre calorifere -----------
+// Just two end fittings at the front edge of the skid: the TUR pipe ends
+// in an outlet union, the RETUR pipe starts from an inlet union. The
+// radiators and their piping belong to the building, not to this model.
 function buildManifold(origin){
   const g = new THREE.Group(); g.position.copy(origin);
-  const baseY=0.55;
-  const header = box(0.05,0.28,0.05,MAT.steel); header.position.set(0,baseY,0); g.add(header);
-  const out1 = cyl(0.018,0.018,0.10,MAT.steelDark,10); out1.rotation.z=Math.PI/2; out1.position.set(0.07,baseY+0.08,0); g.add(out1);
-  const out2 = cyl(0.018,0.018,0.10,MAT.steelDark,10); out2.rotation.z=Math.PI/2; out2.position.set(0.07,baseY-0.08,0); g.add(out2);
-  // simple radiator prop just beyond the manifold, purely to close the loop visually
-  const rad = box(0.05,0.32,0.28, new THREE.MeshStandardMaterial({color:0xcfd3d6, metalness:0.3, roughness:0.5}));
-  rad.position.set(0.30,baseY,0); g.add(rad);
-  for(let i=0;i<8;i++){
-    const fin = box(0.002,0.30,0.26, new THREE.MeshStandardMaterial({color:0xb9bec2, metalness:0.3, roughness:0.5}));
-    fin.position.set(0.28+i*0.006, baseY,0); g.add(fin);
+  const turL = V3(0.15,0.85,0), retL = V3(-0.15,0.22,0);   // local positions of the two unions
+  function endFitting(p, arrowOut){
+    const f = new THREE.Group(); f.position.copy(p);
+    const nut = cyl(0.036,0.036,0.03,MAT.brass,6); nut.rotation.x=Math.PI/2; nut.position.z=0.015; f.add(nut);
+    const nip = cyl(0.028,0.028,0.05,MAT.brass,14); nip.rotation.x=Math.PI/2; nip.position.z=0.055; f.add(nip);
+    const lip = cyl(0.032,0.032,0.008,MAT.flange,16); lip.rotation.x=Math.PI/2; lip.position.z=0.08; f.add(lip);
+    const hole = new THREE.Mesh(new THREE.CircleGeometry(0.02,16), MAT.black); hole.position.z=0.0845; f.add(hole);
+    const arrow = new THREE.Mesh(new THREE.ConeGeometry(0.018,0.04,12), new THREE.MeshStandardMaterial({color:0x3fd0e6, emissive:0x0b3c44, emissiveIntensity:0.6}));
+    arrow.rotation.x = arrowOut ? Math.PI/2 : -Math.PI/2; arrow.position.z = 0.13; f.add(arrow);
+    g.add(f);
   }
+  endFitting(turL, true); endFitting(retL, false);
   registerEquip(g, {
-    tag:'DIST-01', name:'Distribuție consumatori (radiatoare / IPAT)',
-    desc:'Colector de tur/retur către circuitele de încălzire ale clădirii. Opțional: vană de amestec cu 3 căi dacă există circuite de temperatură joasă.',
-    specs:[['Regim','55 / 45 °C']],
+    tag:'DIST-01', name:'Plecare / retur calorifere',
+    desc:'Aici apa caldă pleacă spre caloriferele din clădire (sus, 55 °C) și se întoarce de la ele (jos, 45 °C). Racordurile sunt capetele instalației din camera tehnică; traseele și caloriferele din Birou 1, Birou 2 și Vestiar țin de instalația clădirii.',
+    specs:[['Regim','55 / 45 °C'],['Racord','olandez DN20']],
     trend:[{key:'apaConsTur', label:'T° tur', unit:'°C', fluid:'apa'}, {key:'apaConsRetur', label:'T° retur', unit:'°C', fluid:'apa'}],
-    labelPos: origin.clone().add(V3(0.1,baseY+0.22,0)), borderColor:'rgba(111,176,240,.5)'
+    labelPos: origin.clone().add(V3(0,1.05,0.05)), borderColor:'rgba(111,176,240,.5)'
   });
-  return { group:g, ports:{
-    tur:   origin.clone().add(V3(0,baseY+0.13,0)),
-    retur: origin.clone().add(V3(0,baseY-0.13,0))
-  }};
+  const s1 = makeSprite(['→ spre calorifere · TUR'], {size:9.5, worldH:0.06, bg:'rgba(14,18,24,.82)', border:'rgba(63,208,230,.5)'});
+  s1.position.copy(origin.clone().add(turL).add(V3(0,0.09,0.12))); gLabelsPipe.add(s1);
+  const s2 = makeSprite(['← de la calorifere · RETUR'], {size:9.5, worldH:0.06, bg:'rgba(14,18,24,.82)', border:'rgba(63,208,230,.5)'});
+  s2.position.copy(origin.clone().add(retL).add(V3(0,0.09,0.12))); gLabelsPipe.add(s2);
+  s1.userData.tied = s2.userData.tied = true; g.userData.extraLabels = [s1, s2];
+  return { group:g, ports:{ tur: origin.clone().add(turL), retur: origin.clone().add(retL) } };
 }
 
 /* ---------------------------------------------------------------------
@@ -1402,9 +1546,9 @@ const eqEvap   = buildBPHE(POS.evap, {co2Top:true, info:{
 }});
 const eqEEV    = buildEEV(POS.eev);
 const eqGasC   = buildBPHE(POS.gascooler, {co2Top:true, info:{
-  tag:'HX-301', alt:'E-101', name:'Gas cooler CO₂ → apă',
+  tag:'HX-301', alt:'E-101', name:'Gas cooler CO₂ → apă (calorifere)',
   short:'plăci brazate inox (BPHE)',
-  desc:'CO₂ la presiune înaltă (HP) cedează căldură apei de încălzire, adusă de la 45 la 55 °C în regim de încălzire (setpoint urcat la 65 °C doar cât se încarcă boilerele ACM). Se numește „gas cooler", nu condensator: peste 73,8 bar / 31,1°C (pragul critic al CO₂), agentul e supracritic — se răcește, dar nu condensează, nu există fază lichidă separată aici.',
+  desc:'CO₂ la presiune înaltă (HP) cedează căldură apei de încălzire, adusă de la 45 la 55 °C (setpoint urcat la 65 °C doar cât se încarcă boilerele ACM). Se numește „gas cooler", nu condensator: peste 73,8 bar / 31,1°C (pragul critic al CO₂), agentul e supracritic — se răcește, dar nu condensează. E al doilea pe traseul CO₂, după HX-302.',
   specs:[['Putere','14–16 kW'],['Regim apă','45 → 55 °C (65 °C la ACM)'],['Presiune CO₂ min.','120 bar'],['Presiune apă min.','10 bar'],['Regim CO₂','supracritic']],
   trend:[{key:'apaIncRetur', label:'T° apă intrare', unit:'°C', fluid:'apa'}, {key:'apaIncTur', label:'T° apă ieșire', unit:'°C', fluid:'apa'}]
 }});
@@ -1412,126 +1556,105 @@ const eqFilter = buildYFilter(POS.filterSrc);
 const eqExtSource = buildExternalSource(POS.filterSrc.clone().add(V3(-0.62, -0.05, 0.42)));
 const eqPumpSrc = buildPump(POS.pumpSrc, {
   tag:'P-301', alt:'P-201', name:'Pompă circulație — apă sursă',
-  desc:'Asigură debitul de apă rece prin evaporatorul E-301.',
+  desc:'Asigură debitul de apă de sursă prin evaporatorul E-301. Aspiră prin filtrul Y, refulează prin debitmetrul FS301.',
   specs:[['Debit','2,7–2,8 m³/h'],['Presiune (H)','4–6 mCA'],['DN linie','DN25'],['Viteză apă','0,8–1,1 m/s']]
 });
 const eqPumpPrim = buildPump(POS.pumpPrim, {
   tag:'P-302', alt:'P-202', name:'Pompă circulație — încălzire primar',
-  desc:'Circulă apa prin gas cooler și lanțul de rezervoare T-301 → T-302 → T-303.',
-  specs:[['Debit','1,3–1,4 m³/h'],['Presiune (H)','3–5 mCA'],['DN linie','DN20'],['Viteză apă','0,7–1,0 m/s']]
-});
+  desc:'Trage apa de retur din baza rezervorului T-CAL01 (prin VT-CAL01, filtrul FY-302 și V-302A) și o trimite prin clapeta NRV-302 în gas cooler-ul HX-301, de unde se întoarce caldă în partea de sus a lui T-CAL01. Pornește cu câteva secunde înaintea compresorului și face post-circulație 2–3 min după oprire.',
+  specs:[['Debit','1,3–1,4 m³/h (de redimensionat pe puterea finală)'],['Presiune (H)','3–5 mCA'],['DN linie','DN20'],['Viteză apă','0,7–1,0 m/s']]
+}, true);
 const eqPumpSec = buildPump(POS.pumpSec, {
-  tag:'P-303', alt:'P-203', name:'Pompă circulație — consumatori (secundar)',
-  desc:'Alimentează consumatorii (radiatoare / ventiloconvectoare) din partea superioară a T-303.',
-  specs:[['Debit','1,3–1,4 m³/h'],['Presiune (H)','4–6 mCA'],['DN linie','DN20'],['Viteză apă','0,7–1,0 m/s']]
+  tag:'P-303', alt:'P-203', name:'Pompă circulație — calorifere (secundar)',
+  desc:'Ia apa caldă din partea de sus a rezervorului T-CAL01 și o trimite la distribuitorul caloriferelor DIST-01; returul intră înapoi în baza lui T-CAL01. Pornește doar la cerere termică din clădire (termostat / regulator).',
+  specs:[['Debit','de dimensionat pe cele 3 camere (≈2–5 kW)'],['Presiune (H)','4–6 mCA'],['DN linie','DN20'],['Viteză apă','0,7–1,0 m/s']]
 });
-// SINGLE buffer tank for space heating (was 3×200L in series in the
-// original — oversized for this project). At ~2-5 kW for 2 birouri (9mp
-// fiecare) + 1 vestiar (18mp) = 36mp, the 40 l/kW rule gives ~150-200L,
-// and one small/mid room count doesn't create enough flow variability to
-// need 3-stage decoupling — one tank does the decouple+inertia+delivery
-// job together. Exact volume still TBD; placeholder size kept for now.
 const eqTankA = buildTank(POS.tankA, {tag:'T-CAL01', alt:'T-301 (schemă originală)', name:'Rezervor tampon — circuit calorifere',
-  desc:'Singurul rezervor necesar pentru încălzirea celor 3 camere (2 birouri 9mp + vestiar 18mp, ~2-5 kW în regim 55/45). Proiectul original avea 3×200L în serie, dimensionate pentru 14-16 kW — la această scară, un singur vas face decuplarea hidraulică, inerția și stabilizarea livrării deodată. Rămâne la 200 l (nu mai mic) tocmai ca să aibă rezervă: cât timp toată puterea merge la încărcarea boilerelor ACM, el ține caloriferele ~90 min fără aport de la compresor.',
+  desc:'Singurul rezervor necesar pentru încălzirea celor 3 camere (2 birouri 9mp + vestiar 18mp, ~2-5 kW în regim 55/45). Face decuplarea hidraulică între bucla PDC (P-302) și bucla caloriferelor (P-303), plus inerție. Racorduri: sus-față tur de la HX-301, sus-dreapta tur spre P-303, jos-spate retur spre P-302, jos-dreapta retur de la calorifere, aerisitor pe capac, golire jos-stânga. Rămâne la 200 l ca să țină caloriferele ~90 min cât toată puterea merge la ACM.',
   specs:[['Volum','200 l'],['Rol','decuplare + inerție + rezervă la prioritate ACM'],['Temp. sus / jos','≈55 / ≈45 °C'],['Autonomie fără compresor','≈90 min la 3 kW']],
-  trend:[{key:'tA_top', label:'T° sus', unit:'°C', fluid:'apa'}, {key:'tA_bot', label:'T° jos', unit:'°C', fluid:'apa'}]});
+  trend:[{key:'tA_top', label:'T° sus', unit:'°C', fluid:'apa'}, {key:'tA_bot', label:'T° jos', unit:'°C', fluid:'apa'}]},
+  null,
+  { turIn:{ang:90,h:1.00}, turOut:{ang:0,h:1.00}, retOut:{ang:270,h:0.12}, retIn:{ang:0,h:0.12},
+    drain:{ang:180,h:0.04}, vent:{top:true} });
 
-/* ACM (apă caldă menajeră) sub-system — schimbător dedicat + boiler,
-   racordate pe rezervorul de calorifere (nu pe circuitul CO₂ direct),
-   exact cum am discutat: o buclă separată, cu schimb doar de căldură. */
+/* ACM (apă caldă menajeră) — VARIANTA B: al doilea gas cooler direct pe
+   CO₂ + 2 boilere de 300 l în serie, cu grup de siguranță pe apa rece. */
 const eqPumpAcm = buildPump(POS.pumpAcm, {
   tag:'P-ACM', name:'Pompă încărcare ACM (parte potabilă)',
-  desc:'Trage apă rece din fundul lui T-ACM1 și o trimite prin gas cooler-ul HX-302, de unde se întoarce fierbinte în vârful lui T-ACM2. ATENȚIE: fiind pe circuitul de apă potabilă, trebuie pompă sanitară (bronz/inox), nu una de încălzire cu carcasă de fontă. Turația se modulează ca să nimerească ținta de 60 °C la ieșirea din HX-302. Pornește sub 55 °C în boiler, se oprește la 60 °C.',
-  specs:[['Fluid','apă potabilă'],['Material','bronz / inox (sanitar)'],['Reglaj','turație modulată pe T° ieșire'],['Debit','de dimensionat']]
+  desc:'Trage apă rece din baza lui T-ACM1 și o trimite prin gas cooler-ul HX-302, de unde se întoarce la 60 °C în partea de sus a lui T-ACM2. Pornește sub 55 °C în boiler, se oprește la 60 °C; turația se modulează după TT-ACM-HX. Merge doar împreună cu vana MV-ACM deschisă. ATENȚIE: fiind pe apă potabilă, trebuie pompă sanitară (bronz/inox), nu una de încălzire cu carcasă de fontă.',
+  specs:[['Fluid','apă potabilă'],['Material','bronz / inox (sanitar)'],['Reglaj','turație modulată pe T° ieșire HX-302'],['Debit','de dimensionat']]
 }, true);
-/* VARIANTA B — al doilea gas cooler, direct pe CO₂.
-   CO₂-ul intră aici la ~100 °C (direct de la compresor) și iese mult mai
-   rece, pentru că îl întâmpină apă de rețea la ~12 °C. De asta câștigi
-   COP: cu cât iese CO₂-ul mai rece din gas cooler, cu atât fiecare kg de
-   agent transportă mai multă căldură — vezi fișa lui V-301 pentru ce se
-   întâmplă mai departe. */
 const eqHx302 = buildBPHE(POS.hx302, {co2Top:true, info:{
   tag:'HX-302', name:'Gas cooler CO₂ → ACM (varianta B)',
   short:'BPHE perete dublu, CO₂/potabilă',
-  desc:'Al doilea gas cooler, montat direct pe circuitul de CO₂, primul după compresor. Încălzește apa menajeră într-o singură trecere, de la ~12 °C (rețea) la 60 °C — exact principiul pompelor CO₂ pentru ACM. Fiind alimentat cu apă rece, răcește CO₂-ul mult mai jos decât o poate face bucla de calorifere (retur 45 °C), ceea ce ridică COP-ul de la ~2,8 la ~4 pe partea de ACM (≈2000 kWh/an economie).',
+  desc:'Al doilea gas cooler, montat direct pe circuitul de CO₂, primul după compresor. Încălzește apa menajeră într-o singură trecere, de la ~12 °C (rețea) la 60 °C. Fiind alimentat cu apă rece, răcește CO₂-ul mult mai jos decât bucla de calorifere (retur 45 °C), ceea ce ridică COP-ul pe partea de ACM de la ~2,8 la ~4.',
   specs:[['Putere','de dimensionat'],['CO₂','HP, 80–95 bar, intrare ~100 °C'],['Apă','12 → 60 °C, o singură trecere'],['Cerință obligatorie','perete dublu (CO₂ / apă potabilă)'],['Poziție pe CO₂','primul după compresor']]
 }});
-/* 3 × 200 l în SERIE. Motivul seriei (nu paralel): menține stratificarea
-   — apa rece de rețea stă în T-ACM1, cea fierbinte în T-ACM3, iar frontul
-   termic se deplasează ca un „dop". Așa folosești aproape tot volumul la
-   temperatură plină (la un singur vas mare, amestecarea îți ia 10-15%),
-   iar bucla de încărcare poate trage apă cu adevărat rece din fundul lui
-   T-ACM1 — exact ce are nevoie gas cooler-ul pentru COP bun. */
-const ACM_TANKS = [
-  {pos:POS.tAcm1, tag:'T-ACM1', rol:'primul din serie — primește apa rece de rețea în partea de jos; tot din fundul lui pleacă bucla de încărcare spre HX-302, ca gas cooler-ul să primească apa cea mai rece din instalație'},
-  {pos:POS.tAcm2, tag:'T-ACM2', rol:'al doilea din serie — aici se întoarce apa încălzită de la HX-302 (în vârf) și de aici pleacă livrarea spre dușuri'}
-];
-const eqTAcm = ACM_TANKS.map((t,i)=> buildTank(t.pos, {
-  tag:t.tag, name:'Boiler ACM '+(i+1)+'/2 — 300 l',
-  desc:'Boiler de apă caldă menajeră, '+t.rol+'. Vas ZVELT (Ø≈500 mm, H≈1,53 m, H/D 3,1) — forma contează mai mult decât numărul de vase: la același volum, un vas scund Ø600 amestecă mai mult și pierde ~30 l de capacitate utilă, suficient cât să nu mai acopere ultimul val de dușuri. Trebuie certificat pentru apă potabilă (emailat + anod de magneziu, sau inox) și pentru presiunea rețelei — NU un vas tampon de încălzire.',
-  specs:[['Volum','300 l'],['Ø × H manta','≈500 × 1530 mm (H/D 3,1)'],['Rol','stocare ACM (serie, poz. '+(i+1)+'/2)'],['Regim','≈60 °C'],['Cerință','certificat apă potabilă + anod'],['Anti-Legionella','ciclu zilnic ≥60 °C pe tot lanțul']],
+const ACM_DESC = 'Vas ZVELT (Ø≈500 mm, H≈1,53 m, H/D 3,1) — forma contează mai mult decât numărul de vase: la același volum, un vas scund Ø600 amestecă mai mult și pierde ~30 l de capacitate utilă. Trebuie certificat pentru apă potabilă (emailat + anod de magneziu, sau inox) și pentru presiunea rețelei — NU un vas tampon de încălzire.';
+const eqTAcm1 = buildTank(POS.tAcm1, {
+  tag:'T-ACM1', name:'Boiler ACM 1/2 — 300 l',
+  desc:'Primul din serie. Apa rece de rețea intră jos-față (după grupul de siguranță); tot din bază, pe spate, pleacă bucla de încărcare spre P-ACM → HX-302, ca gas cooler-ul să primească apa cea mai rece din instalație. Din partea de sus, pe dreapta, apa trece în baza lui T-ACM2. '+ACM_DESC,
+  specs:[['Volum','300 l'],['Ø × H manta','≈500 × 1530 mm (H/D 3,1)'],['Rol','stocare ACM (serie, poz. 1/2)'],['Regim','≈60 °C'],['Cerință','certificat apă potabilă + anod'],['Anti-Legionella','ciclu zilnic ≥60 °C pe tot lanțul']],
   trend:[{key:'acmTemp', label:'T° boiler', unit:'°C', fluid:'apa'}]},
-  {r:0.25, h:1.53}));
+  {r:0.25, h:1.53},
+  { coldIn:{ang:90,h:0.10}, chargeOut:{ang:270,h:0.10}, seriesOut:{ang:0,h:1.45,len:0.035} });
+const eqTAcm2 = buildTank(POS.tAcm2, {
+  tag:'T-ACM2', name:'Boiler ACM 2/2 — 300 l',
+  desc:'Al doilea din serie. Primește jos-stânga apa din vârful lui T-ACM1, iar sus-față apa încălzită la 60 °C de HX-302. Apa caldă pentru dușuri pleacă din capacul de sus (cel mai cald punct). '+ACM_DESC,
+  specs:[['Volum','300 l'],['Ø × H manta','≈500 × 1530 mm (H/D 3,1)'],['Rol','stocare ACM (serie, poz. 2/2)'],['Regim','≈60 °C'],['Cerință','certificat apă potabilă + anod'],['Anti-Legionella','ciclu zilnic ≥60 °C pe tot lanțul']],
+  trend:[{key:'acmTemp', label:'T° boiler', unit:'°C', fluid:'apa'}]},
+  {r:0.25, h:1.53},
+  { seriesIn:{ang:180,h:0.10,len:0.035}, chargeIn:{ang:90,h:1.38}, hotOut:{top:true}, drain:{ang:0,h:0.04} });
+const eqTAcm = [eqTAcm1, eqTAcm2];
 const eqAcmSource = buildColdInlet(POS.acmSource);
 const eqAcmDist = buildAcmDist(POS.acmDist);
-const eqVex = buildVex(POS.vex);
-const eqSafety = buildSafety(POS.vex.clone().add(V3(0.25,1.15,0)));
-const eqDrain = buildDrainFunnel(POS.vex.clone().add(V3(0.25,0.35,0.10)), 'D-SV01', 'Golire pentru SV-01 — primește evacuarea supapei de siguranță dacă circuitul de încălzire depășește 3 bar.');
-const eqFillValve = buildFillValve(POS.vex.clone().add(V3(-0.24, 0.08, -0.06)));
-buildCO2Bottles(POS.co2bottles);
+const eqReceiver = buildReceiver(POS.receiver);
+const eqOilSep = buildOilSeparator(POS.oilSep);
+const eqSepLp = buildAccumulator(POS.sepLp);
+const eqVex = buildVex(POS.vex, {
+  tag:'VEX-01', alt:'VEX-401', name:'Vas de expansiune — circuit încălzire',
+  desc:'Compensează dilatarea apei din circuitul de încălzire (45–65 °C). Racordat pe RETUR, lângă aspirația pompei P-302 (doc. F: „vase de expansiune pe circuit apă caldă, pe retur, lângă POMPĂ GC") — acolo presiunea e cea mai stabilă. Legat printr-un robinet cu capac (V-VEX), ca să poată fi verificat fără golirea instalației.',
+  specs:[['Circuit','apă încălzire 45–65 °C'],['Racord','teu pe retur, înainte de P-302'],['Presiune preîncărcare','≈1,0 bar (de verificat la montaj)']]
+});
+const eqVexAcm = buildVex(POS.vexAcm, {
+  tag:'VEX-ACM', name:'Vas de expansiune sanitar (ACM)',
+  desc:'Preia dilatarea apei din boilere la încălzire (600 l de la 12 la 60 °C ≈ +10 l). Fără el, supapa SV-ACM ar picura la fiecare încărcare. Trebuie vas pentru apă potabilă (membrană alimentară, cu circulație), montat între clapeta antiretur și boiler.',
+  specs:[['Volum','18–25 l (de confirmat)'],['Fluid','apă potabilă'],['Montaj','pe teu, pe apa rece, după NRV-AR']]
+}, {r:0.08, h:0.18, nippleY:0.35, stand:false, color:0xe9ecef});
+const eqBottles = buildCO2Bottles(POS.co2bottles);
 buildPanel(POS.panel);
+buildDrive(POS.drive);
+buildExtSensor(POS.extSensor);
 const eqManifold = buildManifold(POS.manifold);
-
-/* small isolation valves + instruments scattered per documentation ----- */
-function placeValve(pos, rotY, handleMat, tagInfo){
-  const v = ballValve(handleMat); v.position.copy(pos); v.rotation.y = rotY||0;
-  gInstruments.add(v);
-  registerEquip(v, Object.assign({labelPos:pos.clone().add(V3(0,0.14,0)), borderColor:'rgba(154,167,181,.4)'}, tagInfo));
-}
-function placeGauge(pos, rotY, tagInfo){
-  const gg = gauge(); gg.position.copy(pos); gg.rotation.y = rotY||0;
-  gInstruments.add(gg);
-  registerEquip(gg, Object.assign({labelPos:pos.clone().add(V3(0,0.16,0)), borderColor:'rgba(154,167,181,.4)'}, tagInfo));
-  return gg;
-}
-function placeSensor(pos, tagInfo){
-  const s = thermowell(); s.position.copy(pos);
-  gInstruments.add(s);
-  registerEquip(s, Object.assign({labelPos:pos.clone().add(V3(0,0.11,0)), borderColor:'rgba(154,167,181,.4)'}, tagInfo));
-}
-
-placeValve(POS.filterSrc.clone().add(V3(-0.13,0.09,0)), Math.PI/2, MAT.handleBlue, {tag:'V301S', name:'Izolare sursă IN', desc:'Robinet de izolare pe intrarea circuitului de apă sursă.'});
-placeValve(eqEvap.ports.waterOut.clone().add(V3(0,0.05,0)), Math.PI/2, MAT.handleBlue, {tag:'V302S', name:'Izolare sursă OUT', desc:'Robinet de izolare pe ieșirea circuitului de apă sursă.'});
-placeGauge(POS.comp.clone().add(V3(0.28,0.30,0.12)), -0.4, {tag:'PT LP / PSL', name:'Presiune aspirație CO₂', desc:'Transmițător + presostat de joasă presiune pe linia de aspirație a compresorului.', specs:[['Domeniu afișaj','0–100 bar']], trend:[{key:'pt_lp', label:'PT-LP', unit:'bar', fluid:'co2'}]});
-placeGauge(POS.comp.clone().add(V3(-0.28,0.30,0.12)), 0.4, {tag:'PT HP / PSH', name:'Presiune refulare CO₂', desc:'Transmițător + presostat de înaltă presiune pe linia de refulare a compresorului.', specs:[['Domeniu afișaj','0–160 bar']], trend:[{key:'pt_hp', label:'PT-HP', unit:'bar', fluid:'co2'}]});
-placeSensor(eqComp.ports.discharge.clone().add(V3(0,0.02,0)), {tag:'TT CO₂ HP', name:'Temperatură refulare CO₂', desc:'Monitorizează temperatura gazului refulat de compresor (90–110 °C).'});
-placeSensor(eqComp.ports.suction.clone().add(V3(0,0.02,0)), {tag:'TT CO₂ LP', name:'Temperatură aspirație CO₂', desc:'Monitorizează temperatura vaporilor de CO₂ la intrarea în compresor.'});
-placeSensor(eqEvap.ports.waterIn.clone().add(V3(0,0,0.05)), {tag:'TT301S', name:'T° apă sursă IN', desc:'Temperatura apei de sursă la intrarea în evaporator (~5 °C).'});
-placeSensor(eqEvap.ports.waterOut.clone().add(V3(0,0,0.05)), {tag:'TT302S', name:'T° apă sursă OUT', desc:'Temperatura apei de sursă la ieșirea din evaporator (~0 °C).'});
-placeSensor(eqPumpSrc.ports.out.clone().add(V3(0,0.06,0)), {tag:'FS301', name:'Debitmetru / contact debit — sursă', desc:'Confirmă debitul minim de apă sursă; interblocare pornire PDC.'});
-placeSensor(eqGasC.ports.waterIn.clone().add(V3(0,0,0.05)), {tag:'TT401', name:'T° retur încălzire', desc:'Temperatura apei de încălzire înainte de gas cooler (~45 °C).'});
-placeSensor(eqGasC.ports.waterOut.clone().add(V3(0,0,0.05)), {tag:'TT402', name:'T° după HX-301', desc:'Temperatura apei imediat după gas cooler (~55 °C în încălzire, ~65 °C la încărcarea ACM).'});
-placeValve(eqGasC.ports.waterIn.clone().add(V3(0,-0.06,0)), Math.PI/2, MAT.handleBlue, {tag:'V401H', name:'Izolare retur încălzire'});
-placeValve(eqGasC.ports.waterOut.clone().add(V3(0,0.06,0)), Math.PI/2, MAT.handleBlue, {tag:'V402H', name:'Izolare refulare încălzire'});
-placeSensor(eqManifold.ports.tur.clone().add(V3(0,0.03,0)), {tag:'TT501', name:'T° tur instalație', desc:'Temperatura apei livrate caloriferelor (~55 °C). Control pornire P-303.'});
-placeValve(eqManifold.ports.tur.clone().add(V3(-0.06,0,0)), Math.PI/2, MAT.handleBlue, {tag:'V501H', name:'Izolare tur instalație'});
-placeSensor(eqTankA.ports.top.clone().add(V3(0.09,0.01,0.08)), {tag:'TT-CAL01', name:'T° rezervor final (livrare)', desc:'Temperatura de livrare a turului către cele 3 camere — referință pentru control.'});
-placeValve(eqTankA.ports.bottom.clone().add(V3(0.09,0.01,-0.08)), 0, MAT.handleBlue, {tag:'VT-CAL01', name:'Izolare rezervor T-CAL01'});
-placeSensor(eqTAcm[1].ports.top.clone().add(V3(-0.05,0.01,0.08)), {tag:'TT-ACM', name:'T° livrare ACM (T-ACM2)', desc:'Temperatura apei calde la punctul de livrare — sub 55 °C pornește reîncărcarea (prioritate ACM), la 60 °C se oprește. Tot ea declanșează ciclul zilnic anti-Legionella.'});
-placeSensor(eqTAcm[0].ports.bottom.clone().add(V3(0.06,0.03,0.10)), {tag:'TT-ACM-JOS', name:'T° bază lanț ACM (T-ACM1)', desc:'Temperatura din fundul lanțului — confirmă că apa trimisă spre HX-302 e cu adevărat rece. Asta e chiar condiția de care depinde câștigul de COP al variantei B: cu cât intră mai rece, cu atât iese CO₂-ul mai rece din gas cooler.'});
-eqTAcm.forEach((tk,i)=> placeValve(tk.ports.bottom.clone().add(V3(-0.09,0.01,0.10)), 0, MAT.handleBlue, {tag:'VT-ACM'+(i+1), name:'Izolare / golire boiler ACM '+(i+1)}));
 
 /* ---------------------------------------------------------------------
    13. PIPE ENGINE
 --------------------------------------------------------------------- */
 const pipeRegistry = [];
-const DN_R = { 12:0.017, 15:0.019, 16:0.021, 20:0.026, 25:0.031 };
+const MODEL_WARN = [];
+const EXTRA_DECOR = [];   // non-pipe decor tied to a layer (vent caps + their labels)
+// every pipe belongs to exactly one layer, by circuit
+const CIRC_CAT = {'CO₂':'pCO2','Ulei compresor':'pOIL','CO₂ încărcare':'pCHG','CO₂ siguranță':'pVENT',
+  'Apă sursă':'pSRC','Încălzire primar':'pPRI','Încălzire secundar':'pSEC','ACM potabil':'pACM','Siguranță / expansiune':'pSAF'};
+const PORTS = [];
+const DN_R = { 10:0.012, 12:0.017, 15:0.019, 16:0.021, 20:0.026, 25:0.031 };
 function dnR(dn){ return DN_R[dn] || 0.022; }
 const DN_VEL = { co2:{12:0.5, 16:4.0}, apa:{15:0.6, 20:0.85, 25:1.0} };
 // Real DN (mm) behind each drawn radius — the model exaggerates pipe
 // diameter ~2.4x for legibility, so the fabrication table below always
 // quotes the REAL DN, never the drawn one.
-const DN_REAL = { 12:'DN12 (Ø15 Cu)', 15:'DN15 (Ø18)', 16:'DN16 (Ø18 Cu)', 20:'DN20 (Ø22)', 25:'DN25 (Ø28)' };
+const DN_REAL = { 10:'DN10 (Ø12 Cu)', 12:'DN12 (Ø15 Cu)', 15:'DN15 (Ø18)', 16:'DN16 (Ø18 Cu)', 20:'DN20 (Ø22)', 25:'DN25 (Ø28)' };
+
+// every equipment connection is declared once, with the direction a pipe
+// must leave it in — the self-check uses this to prove each pipe really
+// starts/ends on a nozzle and leaves it square to the face.
+function port(name, pos, dir){
+  PORTS.push({name, pos:pos.clone(), dir:dir.clone().normalize()});
+  return pos.clone();
+}
+const D_UP=V3(0,1,0), D_DN=V3(0,-1,0), D_PX=V3(1,0,0), D_NX=V3(-1,0,0), D_PZ=V3(0,0,1), D_NZ=V3(0,0,-1);
+// route helper: mixes Vector3 ports with [x,y,z] triples
+function R(){ return Array.prototype.map.call(arguments, p=> Array.isArray(p) ? V3(p[0],p[1],p[2]) : p.clone()); }
 
 function pathLen(pts){
   let L=0; for(let i=0;i<pts.length-1;i++) L += pts[i].distanceTo(pts[i+1]);
@@ -1561,22 +1684,6 @@ function pathDirAt(pts, t){
     acc += segLen;
   }
   return V3(1,0,0);
-}
-
-// Generic rack routing: step away from each port along its own safe "out"
-// direction (clear of its equipment's body), rise/drop onto a shared
-// horizontal shelf, travel X then Z on that shelf, then arrive the same
-// way in reverse. Every run gets a *unique* shelf height (see SHELF), so
-// two different pipes can never occupy the same plane — the only way two
-// tubes could still touch is by design (a real tee), never by accident.
-function rackRoute(p1, out1, p2, out2, shelfY){
-  const a = p1.clone().add(out1);
-  const b = p2.clone().add(out2);
-  const a2 = V3(a.x, shelfY, a.z);
-  const b2 = V3(b.x, shelfY, b.z);
-  const mid = V3(b2.x, shelfY, a2.z);
-  const pts = [p1.clone(), a, a2, mid, b2, b, p2.clone()];
-  return pts.filter((p,i)=> i===0 || p.distanceTo(pts[i-1])>1e-4);
 }
 
 /* --- SWEPT ELBOWS -----------------------------------------------------
@@ -1653,14 +1760,30 @@ function teeFitting(pos, radius, runDir, branchDir){
   return g;
 }
 
+// nearest straight (non-bent) stretch of a pipe to a point
+function nearestStraight(pipe, p){
+  let best=null;
+  pipe.segs.forEach(s=>{
+    const ab=new THREE.Vector3().subVectors(s.b,s.a); const L=ab.length(); if(L<1e-6) return;
+    const dir=ab.clone().divideScalar(L);
+    const t=THREE.MathUtils.clamp(new THREE.Vector3().subVectors(p,s.a).dot(dir),0,L);
+    const q=s.a.clone().addScaledVector(dir,t);
+    const d=q.distanceTo(p);
+    if(!best || d<best.d) best={d, pos:q, dir, t, L};
+  });
+  return best;
+}
+
 const pipeArrows = [];
 function addPipe(cfg){
-  // cfg: {group, fluid, dn, points, getTemp, label, labelT, velocity, from, to}
+  // cfg: {group, fluid, dn, points, getTemp, label, labelT, velocity, from, to,
+  //       circuit, fixedColor, teeStart:hostPipe, teeEnd:hostPipe}
   const radius = dnR(cfg.dn);
   const bendR  = cfg.bendR || radius*2.6;          // ≈ long-radius elbow
   const mat = new THREE.MeshStandardMaterial({color: cfg.fixedColor!==undefined?cfg.fixedColor:0xffffff, metalness:0.4, roughness:0.4, emissive:0x000000});
   const bent = buildBends(cfg.points, bendR);
   const pts = bent.dense;                           // true centreline
+  const firstChild = cfg.group.children.length;     // everything added below belongs to this pipe
 
   bent.segs.forEach(s=>{
     const m = cylBetween(s.a, s.b, radius, mat, 14);
@@ -1673,32 +1796,43 @@ function addPipe(cfg){
     cfg.group.add(tube);
   });
 
-  // real union fittings at both ends, aligned with the pipe axis
-  const dStart = new THREE.Vector3().subVectors(pts[1]||pts[0], pts[0]);
-  const dEnd   = new THREE.Vector3().subVectors(pts[pts.length-1], pts[pts.length-2]||pts[pts.length-1]);
-  cfg.group.add(connectionFitting(pts[0], radius, dStart));
-  cfg.group.add(connectionFitting(pts[pts.length-1], radius, dEnd));
+  // union fittings at equipment ends, tee bodies where it branches off a run
+  const dStart = new THREE.Vector3().subVectors(pts[1]||pts[0], pts[0]).normalize();
+  const dEnd   = new THREE.Vector3().subVectors(pts[pts.length-1], pts[pts.length-2]||pts[pts.length-1]).normalize();
+  [[cfg.teeStart, pts[0], dStart], [cfg.teeEnd, pts[pts.length-1], dEnd.clone().negate()]].forEach(([host, p, branchDir])=>{
+    if(host){
+      const h = nearestStraight(host, p);
+      if(!h || h.d>0.004) MODEL_WARN.push('teu în aer: '+(cfg.from||'')+' → '+(cfg.to||''));
+      cfg.group.add(teeFitting(p, dnR(host.dn), h?h.dir:null, branchDir));
+    } else {
+      cfg.group.add(connectionFitting(p, radius, branchDir));
+    }
+  });
 
   // static direction arrows — always visible with the pipe, independent of
   // the flow-particle animation, so the route reads at a glance.
-  const arrowMat = new THREE.MeshStandardMaterial({color:0xffffff, emissive:0x000000, metalness:0.2, roughness:0.35});
-  [0.28, 0.72].forEach(ft=>{
-    const dir = pathDirAt(pts, ft);
-    if(dir.lengthSq()<0.5) return;
-    const arrow = new THREE.Mesh(new THREE.ConeGeometry(radius*1.9, radius*4.2, 12), arrowMat);
-    arrow.position.copy(pathPointAt(pts, ft));
-    arrow.quaternion.setFromUnitVectors(V3(0,1,0), dir);
-    arrow.castShadow = true;
-    cfg.group.add(arrow);
-    pipeArrows.push(arrow);
-  });
+  const arrowMat = new THREE.MeshStandardMaterial({color:cfg.fixedColor!==undefined?cfg.fixedColor:0xffffff, emissive:0x000000, metalness:0.2, roughness:0.35});
+  if(bent.len > 0.40){
+    [0.28, 0.72].forEach(ft=>{
+      const dir = pathDirAt(pts, ft);
+      if(dir.lengthSq()<0.5) return;
+      const arrow = new THREE.Mesh(new THREE.ConeGeometry(radius*1.9, radius*4.2, 12), arrowMat);
+      arrow.position.copy(pathPointAt(pts, ft));
+      arrow.quaternion.setFromUnitVectors(V3(0,1,0), dir);
+      arrow.castShadow = true;
+      cfg.group.add(arrow);
+      pipeArrows.push(arrow);
+    });
+  }
 
   const velocity = cfg.velocity || (DN_VEL[cfg.fluid] && DN_VEL[cfg.fluid][cfg.dn]) || 0.7;
   const entry = {
-    fluid:cfg.fluid, dn:cfg.dn, points:pts, getTemp:cfg.getTemp, material:mat, arrowMat,
+    meshes: cfg.group.children.slice(firstChild), cat: CIRC_CAT[cfg.circuit]||'pSAF', labelSprite:null,
+    fluid:cfg.fluid, dn:cfg.dn, points:pts, segs:bent.segs, getTemp:cfg.getTemp||(()=>20), material:mat, arrowMat,
     len:bent.len, velocity, fixedColor:cfg.fixedColor,
     from:cfg.from||'', to:cfg.to||'', label:cfg.label||'',
-    bends:bent.arcs.length, circuit:cfg.circuit||''
+    bends:bent.arcs.length, circuit:cfg.circuit||'', fittings:[],
+    teeStart:cfg.teeStart||null, teeEnd:cfg.teeEnd||null
   };
   pipeRegistry.push(entry);
 
@@ -1707,244 +1841,606 @@ function addPipe(cfg){
     const mid = pathPointAt(pts, t);
     const spr = makeSprite([cfg.label], {size:10.5, worldH:0.075, bg:'rgba(14,18,24,.82)', border: cfg.fluid==='co2'?'rgba(224,120,47,.55)':'rgba(63,208,230,.55)'});
     spr.position.copy(mid).add(V3(0, radius+0.045, 0));
+    spr.userData.tied = true; entry.labelSprite = spr;
     gLabelsPipe.add(spr);
   }
   return entry;
 }
 
 /* ---------------------------------------------------------------------
-   14. PIPE ROUTES — CO2 loop. Four runs, four distinct rack heights
-   (2.06 / 2.16 / 2.26 / 2.36) — a closed loop that never touches itself.
+   13b. IN-LINE / BRANCH FITTINGS — mounted ON a pipe, not near it.
+   mountInline(): body centred on the pipe axis, aligned with the flow.
+   mountBranch(): tee boss on the pipe + the device on its side.
+   Both refuse (warning) a spot that isn't on a straight stretch, so a
+   valve can never end up floating in the air or sitting inside an elbow.
 --------------------------------------------------------------------- */
-const UP   = V3(0,0.18,0);
-// Each BPHE's CO2-in and CO2-out ports sit at the *same* X/Z (only height
-// differs), so a small opposite X-nudge keeps the "in" and "out" jumper
-// columns from coinciding with each other — the Z step alone already
-// clears the block itself (block spans z 1.065–1.175, this steps past it).
-const REAR_IN  = V3(0.04,0,-0.20);
-const REAR_OUT = V3(-0.04,0,-0.20);
-// BPHE water IN and water OUT sit at the same X/Z (only height differs),
-// exactly like the CO2 pair — so they get the same opposite nudge, or their
-// vertical risers would share one column and overlap.
-const FRONT_IN  = V3(-0.05,0,0.18);
-const FRONT_OUT = V3( 0.05,0,0.18);
-const FRONT     = V3(0,0,0.18);
-// HX-302 urcă spre etajul ACM (y≈2,0) și ar tăia exact conducta de tur a
-// lui HX-301, care traversează la y=1,74 pe z=1,355 — deci coloana lui
-// urcă mai în spate, la z≈1,52 (și în afara șinei de rack de la z=1,42).
-const FRONT_ACM = V3(0.05,0,0.345);
+function alignX(obj, dir, upHint){
+  const x=dir.clone().normalize();
+  let y=(upHint||V3(0,1,0)).clone(); y.addScaledVector(x,-y.dot(x));
+  if(y.lengthSq()<1e-6){ y=V3(0,0,1); y.addScaledVector(x,-y.dot(x)); }
+  y.normalize();
+  const z=new THREE.Vector3().crossVectors(x,y);
+  obj.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(x,y,z));
+}
+function alignY(obj, side, zHint){
+  const y=side.clone().normalize();
+  let z=(zHint||V3(0,0,1)).clone(); z.addScaledVector(y,-z.dot(y));
+  if(z.lengthSq()<1e-6){ z=V3(1,0,0); z.addScaledVector(y,-z.dot(y)); }
+  z.normalize();
+  const x=new THREE.Vector3().crossVectors(y,z);
+  obj.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(x,y,z));
+}
+function locateOnPipe(pipe, p, halfLen, tag){
+  const b = nearestStraight(pipe, p);
+  if(!b || b.d>0.004){
+    MODEL_WARN.push(tag+': nu stă pe axa conductei '+pipe.from+' → '+pipe.to+' (abatere '+(b?b.d.toFixed(3):'?')+' m)');
+  } else if(b.t < halfLen+0.004 || b.L-b.t < halfLen+0.004){
+    MODEL_WARN.push(tag+': intră într-un cot / racord pe '+pipe.from+' → '+pipe.to);
+  }
+  return b;
+}
+function smallInfo(info, pos){
+  return Object.assign({labelPos:pos, borderColor:'rgba(154,167,181,.45)', small:true}, info);
+}
+function mountInline(pipe, p, obj, halfLen, info){
+  const a = locateOnPipe(pipe, p, halfLen, info.tag);
+  obj.position.copy(a.pos); alignX(obj, a.dir);
+  obj.userData.hostPipe = pipe;
+  gInstruments.add(obj);
+  pipe.fittings.push(info.tag);
+  registerEquip(obj, smallInfo(info, a.pos.clone().add(V3(0,0.15,0))));
+  return obj;
+}
+function mountBranch(pipe, p, side, obj, info){
+  const a = locateOnPipe(pipe, p, 0.032, info.tag);
+  if(Math.abs(side.clone().normalize().dot(a.dir))>0.05) MODEL_WARN.push(info.tag+': ramificația nu e perpendiculară pe conductă');
+  const r = dnR(pipe.dn);
+  const g = new THREE.Group(); g.position.copy(a.pos);
+  const boss = cyl(r*1.3, r*1.3, 0.06, MAT.flange, 14);
+  boss.quaternion.setFromUnitVectors(V3(0,1,0), a.dir); g.add(boss);
+  obj.position.copy(side.clone().normalize().multiplyScalar(r*1.3));
+  alignY(obj, side); g.add(obj);
+  g.userData.hostPipe = pipe;
+  if(obj.userData.needle) g.userData.needle = obj.userData.needle;
+  if(obj.userData.indicator) g.userData.indicator = obj.userData.indicator;
+  g.userData.device = obj;
+  gInstruments.add(g);
+  pipe.fittings.push(info.tag);
+  registerEquip(g, smallInfo(info, a.pos.clone().addScaledVector(side.clone().normalize(),0.10).add(V3(0,0.10,0))));
+  return g;
+}
+// device screwed straight onto an equipment nozzle / shell (no pipe)
+function mountOnPort(eq, portName, obj, info){
+  const pos = eq.ports[portName], dir = eq.dirs[portName];
+  obj.position.copy(pos); alignY(obj, dir);
+  obj.userData.attachTo = eq.group;
+  gInstruments.add(obj);
+  registerEquip(obj, smallInfo(info, pos.clone().addScaledVector(dir,0.10).add(V3(0,0.10,0))));
+  return obj;
+}
+function mountOnShell(tank, ang, h, obj, info){
+  const a = ang*Math.PI/180, dir = V3(Math.cos(a),0,Math.sin(a));
+  const pos = tank.origin.clone().addScaledVector(dir, tank.r).add(V3(0, tank.legH+h, 0));
+  obj.position.copy(pos); alignY(obj, dir);
+  obj.userData.attachTo = tank.group;
+  gInstruments.add(obj);
+  registerEquip(obj, smallInfo(info, pos.clone().addScaledVector(dir,0.12).add(V3(0,0.09,0))));
+  return obj;
+}
 
-// VARIANTA B: CO₂-ul trece întâi prin HX-302 (ACM) — are nevoie de vârful
-// pantei de răcire ca să facă 60 °C — și abia apoi prin HX-301 (calorifere),
-// care se mulțumește cu ce rămâne. Ordinea inversă n-ar funcționa: dacă
-// aici ar fi primele caloriferele, CO₂-ul ar ieși la ~50 °C și n-ar mai
-// putea produce ACM de 60 °C.
-addPipe({ group:gPipeCO2, fluid:'co2', dn:12, velocity:3.0,
-  circuit:'CO₂', from:'C-301 refulare', to:'HX-302 CO₂ IN (sus-spate)',
-  points: rackRoute(eqComp.ports.discharge, UP, eqHx302.ports.co2In, REAR_IN, SHELF.co2Discharge),
-  getTemp: s=>s.co2_disc, label:'CO₂ · refulare HP', labelT:0.5 });
+/* --- fitting geometry. In-line parts: local X = flow axis. Branch parts:
+   local +Y = outward from the pipe, origin on the pipe surface. ------- */
+function mkBall(handleMat){ return ballValve(handleMat||MAT.handleBlue); }
+function mkLockshield(){
+  const g=ballValve(MAT.handleRed);
+  g.children.forEach(c=>{ if(c.material===MAT.handleRed) c.scale.set(0.35,1.6,1.4); });
+  return g;
+}
+function mkCheck(){
+  const g=new THREE.Group();
+  const body=cyl(0.024,0.024,0.066,MAT.brass,6); body.rotation.z=Math.PI/2; g.add(body);
+  [-0.036,0.036].forEach(x=>{ const n=cyl(0.02,0.02,0.01,MAT.steelDark,10); n.rotation.z=Math.PI/2; n.position.x=x; g.add(n); });
+  const arrow=new THREE.Mesh(new THREE.ConeGeometry(0.009,0.024,8), MAT.black);
+  arrow.rotation.z=-Math.PI/2; arrow.position.set(0.002,0.026,0); g.add(arrow);
+  return g;
+}
+function mkStrainer(){
+  const g=new THREE.Group();
+  const main=cyl(0.022,0.022,0.12,MAT.brass,12); main.rotation.z=Math.PI/2; g.add(main);
+  const pocket=new THREE.Group();
+  const br=cyl(0.017,0.017,0.075,MAT.brass,12); br.position.y=-0.04; pocket.add(br);
+  const cap=cyl(0.02,0.02,0.014,MAT.flange,12); cap.position.y=-0.082; pocket.add(cap);
+  pocket.rotation.x = Math.PI/4; g.add(pocket);
+  return g;
+}
+function mkDrier(){
+  const g=new THREE.Group();
+  const body=cyl(0.026,0.026,0.11,MAT.copper,16); body.rotation.z=Math.PI/2; g.add(body);
+  [-1,1].forEach(s=>{ const c=cyl(s>0?0.012:0.026, s>0?0.026:0.012, 0.022, MAT.copper,16); c.rotation.z=Math.PI/2; c.position.x=s*0.066; g.add(c); });
+  const lbl=cyl(0.0265,0.0265,0.04,new THREE.MeshStandardMaterial({color:0x2e7d4f,roughness:0.5}),16); lbl.rotation.z=Math.PI/2; g.add(lbl);
+  return g;
+}
+function mkSight(){
+  const g=new THREE.Group();
+  const body=cyl(0.02,0.02,0.056,MAT.brass,6); body.rotation.z=Math.PI/2; g.add(body);
+  const glass=cyl(0.014,0.014,0.008,new THREE.MeshStandardMaterial({color:0x3fbf6a, emissive:0x0e5a2c, emissiveIntensity:0.6, roughness:0.2}),16);
+  glass.position.y=0.022; g.add(glass);
+  return g;
+}
+function mkMotorValve(boxColor){
+  const g=new THREE.Group();
+  const body=cyl(0.026,0.026,0.09,MAT.brass,14); body.rotation.z=Math.PI/2; g.add(body);
+  const neck=cyl(0.01,0.01,0.04,MAT.steelDark,8); neck.position.y=0.045; g.add(neck);
+  const act=box(0.07,0.055,0.06,new THREE.MeshStandardMaterial({color:boxColor||0x3a3f45, roughness:0.5})); act.position.y=0.092; g.add(act);
+  return g;
+}
+function mkHPV(){
+  const g=new THREE.Group();
+  const body=cyl(0.028,0.028,0.10,MAT.steel,14); body.rotation.z=Math.PI/2; g.add(body);
+  const act=cyl(0.024,0.024,0.08,MAT.steelDark,14); act.position.y=0.068; g.add(act);
+  const coil=cyl(0.02,0.02,0.03,MAT.black,10); coil.position.y=0.123; g.add(coil);
+  return g;
+}
+function mkReducer(){
+  const g=new THREE.Group();
+  const body=cyl(0.026,0.026,0.09,MAT.brass,14); body.rotation.z=Math.PI/2; g.add(body);
+  const bell=cyl(0.02,0.03,0.055,MAT.brass,14); bell.position.y=0.05; g.add(bell);
+  const knob=cyl(0.012,0.012,0.02,MAT.black,10); knob.position.y=0.088; g.add(knob);
+  return g;
+}
+function mkFlow(){
+  const g=new THREE.Group();
+  const body=cyl(0.034,0.034,0.10,MAT.steel,16); body.rotation.z=Math.PI/2; g.add(body);
+  const neck=cyl(0.009,0.009,0.03,MAT.steelDark,8); neck.position.y=0.045; g.add(neck);
+  const head=box(0.05,0.04,0.045,MAT.black); head.position.y=0.08; g.add(head);
+  return g;
+}
+function mkSensor(){
+  const g=new THREE.Group();
+  const stem=cyl(0.007,0.007,0.045,MAT.steelDark,8); stem.position.y=0.0225; g.add(stem);
+  const head=box(0.032,0.03,0.032,MAT.black); head.position.y=0.06; g.add(head);
+  return g;
+}
+function mkThermostat(){
+  const g=new THREE.Group();
+  const stem=cyl(0.007,0.007,0.04,MAT.steelDark,8); stem.position.y=0.02; g.add(stem);
+  const head=cyl(0.024,0.024,0.03,new THREE.MeshStandardMaterial({color:0xe7e4d8, roughness:0.5}),16); head.position.y=0.055; g.add(head);
+  const knob=cyl(0.01,0.01,0.012,MAT.handleRed,10); knob.position.y=0.076; g.add(knob);
+  return g;
+}
+function mkVent(){
+  const g=new THREE.Group();
+  const stem=cyl(0.008,0.008,0.03,MAT.brass,8); stem.position.y=0.015; g.add(stem);
+  const v=airVent(); v.position.y=0.03; g.add(v);
+  return g;
+}
+function mkTap(){  // drain / fill cock with hose connector
+  const g=new THREE.Group();
+  const stem=cyl(0.009,0.009,0.04,MAT.brass,8); stem.position.y=0.02; g.add(stem);
+  const body=cyl(0.02,0.02,0.05,MAT.brass,12); body.position.y=0.065; g.add(body);
+  const handle=box(0.07,0.012,0.016,MAT.handleRed); handle.position.set(0,0.065,0.03); g.add(handle);
+  const hose=cyl(0.012,0.014,0.03,MAT.steelDark,10); hose.position.y=0.105; g.add(hose);
+  return g;
+}
+function mkFill(){
+  const g=mkTap();
+  const chk=cyl(0.018,0.018,0.02,MAT.brass,6); chk.position.y=0.13; g.add(chk);
+  const cap=cyl(0.014,0.014,0.014,MAT.handleRed,10); cap.position.y=0.147; g.add(cap);
+  return g;
+}
+function mkCharge(){
+  const g=new THREE.Group();
+  const stem=cyl(0.008,0.008,0.04,MAT.brass,8); stem.position.y=0.02; g.add(stem);
+  const body=cyl(0.013,0.013,0.028,MAT.brass,6); body.position.y=0.054; g.add(body);
+  const cap=cyl(0.012,0.012,0.018,MAT.handleRed,10); cap.position.y=0.077; g.add(cap);
+  return g;
+}
+function mkGauge(){ return gauge(); }
+// safety valve: inlet at local origin (bottom), outlet either on top (CO₂
+// vent stack) or on the side (water, to a drain funnel)
+function mkSafetyValve(sideOutlet){
+  const g=new THREE.Group();
+  const nip=cyl(0.012,0.012,0.02,MAT.brass,10); nip.position.y=0.01; g.add(nip);
+  const body=cyl(0.022,0.022,0.07,MAT.brass,12); body.position.y=0.055; g.add(body);
+  const bonnetMat=MAT.brass.clone();
+  const bonnet=cyl(0.012,0.019,0.05,bonnetMat,12); bonnet.position.y=0.115; g.add(bonnet);
+  const lever=box(0.05,0.008,0.012,MAT.handleRed); lever.position.set(0.02,0.14,0); g.add(lever);
+  let outLocal;
+  if(sideOutlet){
+    outLocal=V3(0.05,0.05,0);
+    const o=cylBetween(V3(0.02,0.05,0), outLocal, 0.012, MAT.brass, 10); if(o) g.add(o);
+  } else {
+    outLocal=V3(0,0.17,0);
+    const o=cylBetween(V3(0,0.14,0), outLocal, 0.012, MAT.brass, 10); if(o) g.add(o);
+  }
+  g.userData.indicator=bonnet; g.userData.outLocal=outLocal;
+  return g;
+}
+function safetyOutlet(o){ const d=o.userData.device||o; d.updateWorldMatrix(true,false); return d.localToWorld(d.userData.outLocal.clone()); }
+function ventCap(pos){
+  const g=new THREE.Group(); g.position.copy(pos);
+  const hood=new THREE.Mesh(new THREE.ConeGeometry(0.04,0.035,14), MAT.steelDark); hood.position.y=0.045; g.add(hood);
+  gAux.add(g);
+  const spr=makeSprite(['↑ evacuare CO₂ în exterior'], {size:9.5, worldH:0.06, bg:'rgba(14,18,24,.82)', border:'rgba(224,120,47,.5)'});
+  spr.position.copy(pos).add(V3(0,0.13,0)); gLabelsPipe.add(spr);
+  spr.userData.tied = true; EXTRA_DECOR.push({obj:g, label:spr, cat:'pVENT'});
+}
 
-addPipe({ group:gPipeCO2, fluid:'co2', dn:12, velocity:2.0,
+/* ---------------------------------------------------------------------
+   14. PIPE ROUTES — CO₂. Compact, low loop around the compressor:
+   C-301 → HX-302 → HX-301 → HP-REG → REC-CO2 → FD → SG → V-301 → E-301
+   → C-301, plus the flash-gas bypass REC-CO2 → suction. Every run is
+   hand-routed with square legs on its own lane.
+--------------------------------------------------------------------- */
+const pD   = port('C-301 refulare', eqComp.ports.discharge, D_UP);
+const pS   = port('C-301 aspirație', eqComp.ports.suction, D_UP);
+const pH2i = port('HX-302 CO₂ IN', eqHx302.ports.co2In, D_NZ);
+const pH2o = port('HX-302 CO₂ OUT', eqHx302.ports.co2Out, D_NZ);
+const pH1i = port('HX-301 CO₂ IN', eqGasC.ports.co2In, D_NZ);
+const pH1o = port('HX-301 CO₂ OUT', eqGasC.ports.co2Out, D_NZ);
+const pEi  = port('E-301 CO₂ IN', eqEvap.ports.co2In, D_NZ);
+const pEo  = port('E-301 CO₂ OUT', eqEvap.ports.co2Out, D_NZ);
+const pVi  = port('V-301 intrare', eqEEV.ports.in, D_NX);
+const pVo  = port('V-301 ieșire', eqEEV.ports.out, D_PX);
+const pRin = port('REC-CO2 intrare', eqReceiver.ports.in, eqReceiver.dirs.in);
+const pRliq= port('REC-CO2 lichid', eqReceiver.ports.liq, eqReceiver.dirs.liq);
+const pRgas= port('REC-CO2 gaz', eqReceiver.ports.gas, eqReceiver.dirs.gas);
+
+const pOSi = port('OS-C301 intrare', eqOilSep.ports.in, eqOilSep.dirs.in);
+const pOSg = port('OS-C301 gaz', eqOilSep.ports.gas, eqOilSep.dirs.gas);
+const pOSo = port('OS-C301 ulei', eqOilSep.ports.oil, eqOilSep.dirs.oil);
+const pCoil = port('C-301 retur ulei', eqComp.ports.oilRet, D_NZ);
+const co2DiscA = addPipe({ group:gPipeCO2, fluid:'co2', dn:12, velocity:3.0,
+  circuit:'CO₂', from:'C-301 refulare', to:'OS-C301 intrare',
+  points: R(pD, [pD.x,pOSi.y,pD.z], [pD.x,pOSi.y,pOSi.z], pOSi),
+  getTemp: s=>s.co2_disc });
+const co2Disc = addPipe({ group:gPipeCO2, fluid:'co2', dn:12, velocity:3.0,
+  circuit:'CO₂', from:'OS-C301 gaz', to:'HX-302 CO₂ IN (sus-spate)',
+  points: R(pOSg, [pOSg.x,1.30,pOSg.z], [pOSg.x,1.30,0.90], [pH2i.x,1.30,0.90], [pH2i.x,pH2i.y,0.90], pH2i),
+  getTemp: s=>s.co2_disc, label:'CO₂ · refulare HP', labelT:0.62 });
+// oil return: OS-C301 bottom → filter → solenoid → sight glass → crankcase
+const oilRet = addPipe({ group:gPipeCO2, fluid:'co2', dn:10, fixedColor:0x9a7424, velocity:0.2,
+  circuit:'Ulei compresor', from:'OS-C301 ulei', to:'C-301 retur ulei (carter)',
+  points: R(pOSo, [1.54,pOSo.y,pOSo.z], [1.54,pOSo.y,0.04], [pCoil.x,pOSo.y,0.04], pCoil),
+  getTemp: s=>40, label:'ulei → carter C-301', labelT:0.55 });
+
+const co2Mid = addPipe({ group:gPipeCO2, fluid:'co2', dn:12, velocity:2.0,
   circuit:'CO₂', from:'HX-302 CO₂ OUT (jos-spate)', to:'HX-301 CO₂ IN (sus-spate)',
-  points: rackRoute(eqHx302.ports.co2Out, REAR_OUT, eqGasC.ports.co2In, REAR_IN, 2.16),
-  getTemp: s=>s.co2_afterACM, label:'CO₂ · după gas cooler ACM', labelT:0.5 });
+  points: R(pH2o, [pH2o.x,pH2o.y,0.80], [pH1i.x,pH2o.y,0.80], [pH1i.x,pH1i.y,0.80], pH1i),
+  getTemp: s=>s.co2_afterACM, label:'CO₂ · după HX-302', labelT:0.35 });
 
-// HX-301 -> V-301: short local jumper (both low, ~1m apart) — no need for
-// the overhead rack, and going there made the pipe invisible in a normal view.
-addPipe({ group:gPipeCO2, fluid:'co2', dn:12, velocity:0.5,
-  circuit:'CO₂', from:'HX-301 CO₂ OUT (jos-spate)', to:'V-301 intrare',
-  points: rackRoute(eqGasC.ports.co2Out, REAR_OUT, eqEEV.ports.in, V3(-0.10,0,0), SHELF.co2LocalA),
-  getTemp: s=>s.co2_afterHX, label:'CO₂ · HP răcit (supracritic)', labelT:0.5 });
+const co2Gc = addPipe({ group:gPipeCO2, fluid:'co2', dn:12, velocity:0.5,
+  circuit:'CO₂', from:'HX-301 CO₂ OUT (jos-spate)', to:'REC-CO2 intrare',
+  points: R(pH1o, [pH1o.x,pH1o.y,0.92], [pH1o.x,pRin.y,0.92], [pH1o.x,pRin.y,pRin.z], pRin),
+  getTemp: s=>s.co2_afterHX, label:'CO₂ · HP răcit → HP-REG', labelT:0.55 });
 
-// V-301 -> E-301: same idea; shelf sits above the evaporator's own top
-// (1.13) since this run sweeps past it in X before turning toward the port.
-addPipe({ group:gPipeCO2, fluid:'co2', dn:12, velocity:0.6,
+const co2Liq = addPipe({ group:gPipeCO2, fluid:'co2', dn:12, velocity:0.4,
+  circuit:'CO₂', from:'REC-CO2 lichid', to:'V-301 intrare',
+  points: R(pRliq, [pRliq.x,pRliq.y,0.95], [1.58,pRliq.y,0.95], [1.58,pVi.y,0.95], [1.58,pVi.y,pVi.z], pVi),
+  getTemp: s=>s.co2_rec, label:'CO₂ · lichid receiver', labelT:0.30 });
+
+const co2Evap = addPipe({ group:gPipeCO2, fluid:'co2', dn:12, velocity:0.6,
   circuit:'CO₂', from:'V-301 ieșire', to:'E-301 CO₂ IN (sus-spate)',
-  points: rackRoute(eqEEV.ports.out, V3(0.10,0,0), eqEvap.ports.co2In, REAR_IN, SHELF.co2LocalB),
-  getTemp: s=>s.co2_afterEEV, label:'CO₂ · după laminare LP', labelT:0.5 });
+  points: R(pVo, [1.90,pVo.y,pVo.z], [1.90,pVo.y,0.96], [1.90,pEi.y,0.96], [pEi.x,pEi.y,0.96], pEi),
+  getTemp: s=>s.co2_afterEEV, label:'CO₂ · după laminare LP', labelT:0.7 });
 
+const pSLi = port('SEP-LP intrare', eqSepLp.ports.in, eqSepLp.dirs.in);
+const pSLo = port('SEP-LP ieșire', eqSepLp.ports.out, eqSepLp.dirs.out);
 addPipe({ group:gPipeCO2, fluid:'co2', dn:16, velocity:4.0,
-  circuit:'CO₂', from:'E-301 CO₂ OUT (jos-spate)', to:'C-301 aspirație',
-  points: rackRoute(eqEvap.ports.co2Out, REAR_OUT, eqComp.ports.suction, UP, SHELF.co2Suction),
+  circuit:'CO₂', from:'E-301 CO₂ OUT (jos-spate)', to:'SEP-LP intrare',
+  points: R(pEo, [pEo.x,pEo.y,pSLi.z], pSLi),
   getTemp: s=>s.co2_suction, label:'CO₂ · aspirație LP', labelT:0.5 });
+const co2Suct = addPipe({ group:gPipeCO2, fluid:'co2', dn:16, velocity:4.0,
+  circuit:'CO₂', from:'SEP-LP ieșire', to:'C-301 aspirație',
+  points: R(pSLo, [pSLo.x,0.95,pSLo.z], [pS.x,0.95,pSLo.z], [pS.x,0.95,pS.z], pS),
+  getTemp: s=>s.co2_suction, label:'CO₂ · vapori uscați → compresor', labelT:0.55 });
 
-/* ---------------------------------------------------------------------
-   15. PIPE ROUTES — water source circuit (5/0°C), low service trench
---------------------------------------------------------------------- */
-// Both stubs terminate right at the external-source cap (eqExtSource) —
-// this circuit does NOT continue to the tanks, it closes only with the
-// external source (well/borehole). See eqExtSource's own info card.
-const srcStubIn  = eqExtSource.ports.top.clone().add(V3(-0.055, 0.02, -0.055));
-const srcStubOut = eqExtSource.ports.top.clone().add(V3( 0.055, 0.02,  0.055));
+const co2Fgb = addPipe({ group:gPipeCO2, fluid:'co2', dn:12, velocity:1.5,
+  circuit:'CO₂', from:'REC-CO2 gaz', to:'teu aspirație C-301', teeEnd:co2Suct,
+  points: R(pRgas, [pRgas.x,1.05,pRgas.z], [pS.x,1.05,pRgas.z], [pS.x,0.95,pRgas.z]),
+  getTemp: s=>s.co2_rec, label:'CO₂ · gaz flash → aspirație', labelT:0.5 });
 
-addPipe({ group:gPipeSource, fluid:'apa', dn:25,
-  circuit:'Apă sursă', from:'Racord sursă externă', to:'Filtru Y intrare',
-  points: [srcStubIn, eqFilter.ports.in],
-  getTemp: s=>s.apaSrcIn, label:'Apă sursă · IN 5 °C ← din sursa externă' });
+// --- CO₂ fittings, in flow order ---
+mountBranch(co2Disc, V3(pOSg.x,0.82,pOSg.z), D_PX, mkSensor(), {tag:'TT CO₂ HP', alt:'TT-REF', name:'Temperatură refulare CO₂', desc:'Monitorizează temperatura gazului refulat de compresor (90–110 °C). Peste 110 °C → limitare / oprire (doc. A2 §6).'});
+mountBranch(co2Disc, V3(pOSg.x,1.05,pOSg.z), D_PX, Object.assign(mkGauge(),{}), {tag:'PT HP / PSH', alt:'PT-HP (doc. F AI1)', name:'Presiune refulare CO₂', desc:'Transmițător de presiune + presostat de înaltă presiune, pe refulare. PSH oprește compresorul la 120 bar, direct în lanțul de siguranță, independent de PLC.', specs:[['Domeniu','0–160 bar'],['PSH declanșare','120 bar']], trend:[{key:'pt_hp', label:'PT-HP', unit:'bar', fluid:'co2'}], gaugeKey:'pt_hp', gaugeMax:160});
+const eqSVHP = mountBranch(co2Disc, V3(2.10,1.30,0.90), D_UP, mkSafetyValve(false), {tag:'SV-HP', name:'Supapă de siguranță CO₂ — înaltă presiune', desc:'Ultima treaptă de protecție pentru partea HP (compresor → HX-302 → HX-301 → HP-REG), dacă PSH nu a oprit compresorul la timp. Montată pe refulare ÎNAINTEA clapetei NRV-C301 și a robinetului de service V-C301-REF — între ea și compresor nu există nicio vană. Descarcă în exterior prin țeava verticală — CO₂ nu se evacuează niciodată în încăpere.', specs:[['Presiune deschidere','130 bar (≤ PS compresor)'],['Evacuare','exterior, țeavă dedicată']]});
+mountInline(co2Disc, V3(2.30,1.30,0.90), mkCheck(), 0.035, {tag:'NRV-C301', name:'Clapetă de reținere — refulare', desc:'Împiedică întoarcerea CO₂-ului de înaltă presiune din gas coolere în compresor, după oprire. Stă după supapa SV-HP, care rămâne astfel legată direct de compresor.', specs:[['PS','≥ 130 bar']]});
+mountInline(co2Disc, V3(2.45,1.30,0.90), mkBall(MAT.handleRed), 0.04, {tag:'V-C301-REF', name:'Robinet de service — refulare compresor', desc:'Izolează compresorul pentru service fără golirea gas coolerelor. Normal deschis. Montat după PT HP / PSH și SV-HP, ca protecțiile să vadă mereu presiunea compresorului, chiar cu robinetul închis. Certificat pentru presiunea HP (≥ 130 bar).', specs:[['Stare normală','deschis'],['PS','≥ 130 bar']]});
+mountBranch(co2Mid, V3(2.72,0.70,0.80), D_UP, mkSensor(), {tag:'TT-HX302-OUT', name:'T° CO₂ după HX-302', desc:'Arată câtă căldură a luat ACM-ul din CO₂: în modul ACM coboară spre ~20 °C, în modul calorifere rămâne aproape de temperatura de refulare.'});
+mountBranch(co2Gc, V3(pH1o.x,pRin.y,0.72), D_UP, mkSensor(), {tag:'TT-GC-OUT', alt:'doc. F AI4', name:'T° CO₂ ieșire gas coolere', desc:'Temperatura CO₂-ului după ultimul gas cooler (HX-301), înainte de HP-REG. Împreună cu PT-HP dă presiunea optimă pentru COP. Tot ea decide regimul: peste 31 °C transcritic, sub 31 °C subcritic.'});
+mountInline(co2Gc, V3(2.18,pRin.y,pRin.z), mkHPV(), 0.05, {tag:'HP-REG', alt:'HPV (doc. F DO5)', name:'Vană de reglare înaltă presiune', desc:'Menține presiunea optimă în gas coolere (80–100 bar în regim transcritic) și laminează CO₂-ul până la presiunea receiverului. Aici e acum granița termodinamică: înainte — fluid supracritic; după — amestec bifazic sub pragul critic. Comandată de PLC după PT-HP și TT-GC-OUT.', specs:[['Comandă','0–10 V / stepper'],['PS','≥ 140 bar'],['Reglaj','PID pe PT-HP + TT-GC-OUT']]});
+const eqSVREC = mountOnPort(eqReceiver, 'sv', mkSafetyValve(false), {tag:'SV-REC', name:'Supapă de siguranță CO₂ — receiver', desc:'Protejează receiverul și partea de joasă presiune când instalația stă oprită: CO₂-ul ajunge la temperatura camerei și presiunea urcă peste 60 bar (la 25 °C ≈ 64 bar). Evacuare în exterior.', specs:[['Presiune deschidere','după PS-ul vasului (≈ 60–90 bar)'],['Evacuare','exterior, țeavă dedicată']]});
+mountBranch(co2Fgb, V3(pRgas.x,0.90,pRgas.z), D_PX, mkGauge(), {tag:'PT-REC', name:'Presiune receiver CO₂', desc:'Traductor de presiune pe receiver; după el PLC-ul comandă V-FGB ca presiunea intermediară să rămână stabilă (≈ 40–50 bar).', specs:[['Domeniu','0–100 bar']], trend:[{key:'pt_rec', label:'P receiver', unit:'bar', fluid:'co2'}], gaugeKey:'pt_rec', gaugeMax:100});
+mountInline(co2Fgb, V3(1.50,1.05,pRgas.z), mkMotorValve(0x3a3f45), 0.045, {tag:'V-FGB', name:'Vană bypass gaz flash', desc:'Scoate gazul format la laminare din vârful receiverului și îl trimite direct în aspirație, ca presiunea din receiver să rămână stabilă. Fără ea, gazul s-ar acumula și V-301 ar primi amestec în loc de lichid.', specs:[['Comandă','PLC, după PT-REC'],['Racord','teu pe aspirația compresorului']]});
+mountInline(co2Liq, V3(pRliq.x,pRliq.y,0.80), mkDrier(), 0.08, {tag:'FD-CO2', name:'Filtru deshidratator CO₂', desc:'Reține umiditatea și impuritățile din agent înainte de V-301 (doc. F: RECEIVER → FILTRU-DESHIDRATOR → EEV). Umezeala în CO₂ formează acid carbonic și gheață care blochează vana de expansiune.', specs:[['Tip','cartuș sită moleculară, compatibil R744'],['PS','≥ 90 bar']]});
+mountInline(co2Liq, V3(1.58,0.45,0.95), mkSight(), 0.03, {tag:'SG-CO2', name:'Vizor lichid + indicator umiditate', desc:'Arată dacă spre V-301 vine lichid curat (fără bule) și dacă agentul e uscat (culoarea indicatorului).'});
+mountInline(co2Suct, V3(pS.x,0.95,0.53), mkBall(MAT.handleRed), 0.04, {tag:'V-C301-ASP', name:'Robinet de service — aspirație compresor', desc:'Izolează compresorul pe partea de aspirație pentru service. Normal deschis. Stă după teul de gaz flash și înaintea lui PT LP / PSL, ca presostatul să vadă mereu aspirația compresorului.', specs:[['Stare normală','deschis'],['PS','≥ 90 bar']]});
+mountBranch(co2Suct, V3(pS.x,0.69,pS.z), D_NX, mkSensor(), {tag:'TT CO₂ LP', alt:'TT-ASP (doc. F AI3)', name:'Temperatură aspirație CO₂', desc:'Temperatura vaporilor la intrarea în compresor; împreună cu PT LP dă supraîncălzirea după care se reglează V-301 (8–12 K).'});
+mountBranch(co2Suct, V3(pS.x,0.95,0.42), D_UP, mkGauge(), {tag:'PT LP / PSL', alt:'PT-LP (doc. F AI2)', name:'Presiune aspirație CO₂', desc:'Transmițător de presiune + presostat de joasă presiune pe aspirație. PSL oprește compresorul sub 20 bar.', specs:[['Domeniu','0–100 bar'],['PSL declanșare','20 bar']], trend:[{key:'pt_lp', label:'PT-LP', unit:'bar', fluid:'co2'}], gaugeKey:'pt_lp', gaugeMax:100});
+mountBranch(co2Suct, V3(pS.x,0.82,pS.z), D_NX, mkCharge(), {tag:'RS-CO2', name:'Racord de încărcare CO₂', desc:'Ventil de service pe aspirația compresorului, la care e legată linia de încărcare de la butelii. CO₂-ul se introduce ca vapori, pe aspirație, cu compresorul pornit — nu ca lichid, care ar lovi pistoanele.'});
+// linia de încărcare: butelii → colector → PI-INC → V-INC → NRV-INC → RS-CO2
+const pB1 = port('Butelie 1 robinet', eqBottles.ports.b1, D_UP);
+const pB2 = port('Butelie 2 robinet', eqBottles.ports.b2, D_UP);
+const pRS = port('RS-CO2 racord', V3(pS.x-(dnR(16)*1.3+0.086), 0.82, pS.z), D_NX);
+const chargeY = 1.10;
+const chargeLine = addPipe({ group:gPipeCO2, fluid:'co2', dn:10, fixedColor:0xc58a4a, circuit:'CO₂ încărcare',
+  from:'Butelie 1 robinet', to:'RS-CO2 (aspirație C-301)',
+  points: R(pB1, [pB1.x,chargeY,pB1.z], [0.90,chargeY,pB1.z], [0.90,chargeY,pRS.z], [0.90,pRS.y,pRS.z], pRS),
+  getTemp: s=>20, label:'linie încărcare CO₂ (normal închisă)', labelT:0.30 });
+addPipe({ group:gPipeCO2, fluid:'co2', dn:10, fixedColor:0xc58a4a, circuit:'CO₂ încărcare', teeEnd:chargeLine,
+  from:'Butelie 2 robinet', to:'colector încărcare',
+  points: R(pB2, [pB2.x,chargeY,pB2.z]), getTemp: s=>20 });
+mountBranch(chargeLine, V3(0.52,chargeY,pB1.z), D_UP, mkGauge(), {tag:'PI-INC', name:'Manometru butelii CO₂', desc:'Arată presiunea din butelii (≈ 57 bar la 20 °C). Scade vizibil când buteliile se golesc.', specs:[['Domeniu','0–100 bar']]});
+mountInline(chargeLine, V3(0.72,chargeY,pB1.z), mkBall(MAT.handleRed), 0.04, {tag:'V-INC', name:'Robinet încărcare CO₂ (normal închis)', desc:'Stă închis tot timpul; se deschide doar pe durata încărcării. Împreună cu robinetele buteliilor asigură că agentul nu trece necontrolat în circuit.', specs:[['Stare normală','închis'],['PS','≥ 90 bar']]});
+mountInline(chargeLine, V3(0.90,0.96,pRS.z), mkCheck(), 0.035, {tag:'NRV-INC', name:'Clapetă de reținere încărcare', desc:'Împiedică întoarcerea CO₂-ului din circuit spre butelii, dacă presiunea din aspirație e mai mare decât în butelii.'});
 
-addPipe({ group:gPipeSource, fluid:'apa', dn:25,
-  circuit:'Apă sursă', from:'Filtru Y ieșire', to:'P-301 aspirație',
-  points: [eqFilter.ports.out, eqPumpSrc.ports.in],
-  getTemp: s=>s.apaSrcIn });
-
-addPipe({ group:gPipeSource, fluid:'apa', dn:25,
-  circuit:'Apă sursă', from:'P-301 refulare', to:'E-301 apă IN (jos-față)',
-  points: rackRoute(eqPumpSrc.ports.out, V3(0.14,0,0), eqEvap.ports.waterIn, FRONT_IN, SHELF.srcToEvap),
-  getTemp: s=>s.apaSrcIn, label:'Apă sursă → evaporator' });
-
-addPipe({ group:gPipeSource, fluid:'apa', dn:25,
-  circuit:'Apă sursă', from:'E-301 apă OUT (sus-față)', to:'Racord retur sursă externă',
-  points: rackRoute(eqEvap.ports.waterOut, FRONT_OUT, srcStubOut, V3(-0.10,0,-0.16), SHELF.srcReturn),
-  getTemp: s=>s.apaSrcOut, label:'Apă sursă · RETUR 0 °C → înapoi la sursă' });
-
-/* ---------------------------------------------------------------------
-   16. PIPE ROUTES — primary heating circuit (PDC ↔ single buffer tank)
-   T-CAL01 now carries THREE taps at top and three at bottom (tur-in,
-   consumer-supply-out, ACM-supply-out / return-out, consumer-return-in,
-   ACM-return-in) — each pipe gets its own small lateral nudge off the
-   shared port so they read as separate bushings on the same tank head,
-   not one coincident bundle.
---------------------------------------------------------------------- */
-addPipe({ group:gPipePrimary, fluid:'apa', dn:20,
-  circuit:'Încălzire primar', from:'T-CAL01 jos', to:'P-302 aspirație',
-  points: rackRoute(eqTankA.ports.bottom, V3(-0.04,0,0.03), eqPumpPrim.ports.in, V3(-0.14,0,0), SHELF.primaryReturn),
-  getTemp: s=>s.apaIncRetur, label:'Apă încălzire · RETUR → PDC' });
-
-addPipe({ group:gPipePrimary, fluid:'apa', dn:20,
-  circuit:'Încălzire primar', from:'P-302 refulare', to:'HX-301 apă IN (jos-față)',
-  points: rackRoute(eqPumpPrim.ports.out, V3(0.14,0,0), eqGasC.ports.waterIn, FRONT_IN, SHELF.gascoolerRetIn),
-  getTemp: s=>s.apaIncRetur, label:'Apă încălzire · retur 45 °C' });
-
-addPipe({ group:gPipePrimary, fluid:'apa', dn:20,
-  circuit:'Încălzire primar', from:'HX-301 apă OUT (sus-față)', to:'T-CAL01 sus',
-  points: rackRoute(eqGasC.ports.waterOut, FRONT_OUT, eqTankA.ports.top, V3(0.06,0.10,-0.04), SHELF.primaryTur),
-  getTemp: s=>s.apaIncTur, label:'Apă încălzire · TUR 55 °C' });
-
-/* ---------------------------------------------------------------------
-   17. PIPE ROUTES — secondary / consumers circuit (radiatoare)
---------------------------------------------------------------------- */
-addPipe({ group:gPipeSecond, fluid:'apa', dn:20,
-  circuit:'Încălzire secundar', from:'T-CAL01 sus', to:'P-303 aspirație',
-  points: rackRoute(eqTankA.ports.top, V3(-0.06,0.09,0.04), eqPumpSec.ports.in, V3(-0.14,0,0), SHELF.secSupply),
-  getTemp: s=>s.apaConsTur, label:'spre P-303 · 55 °C' });
-
-addPipe({ group:gPipeSecond, fluid:'apa', dn:20,
-  circuit:'Încălzire secundar', from:'P-303 refulare', to:'DIST-01 tur',
-  points: rackRoute(eqPumpSec.ports.out, V3(0.14,0,0), eqManifold.ports.tur, V3(0,0.10,0), SHELF.secTur),
-  getTemp: s=>s.apaConsTur, label:'Apă consumatori · TUR 55 °C' });
-
-addPipe({ group:gPipeSecond, fluid:'apa', dn:20,
-  circuit:'Încălzire secundar', from:'DIST-01 retur', to:'T-CAL01 jos',
-  points: rackRoute(eqManifold.ports.retur, V3(0,-0.10,0), eqTankA.ports.bottom, V3(0.04,0,-0.03), SHELF.consumerReturn),
-  getTemp: s=>s.apaConsRetur, label:'Apă consumatori · RETUR 45 °C' });
-
-/* ---------------------------------------------------------------------
-   17b. PIPE ROUTES — ACM sub-system
-   Primary side: T-CAL01 -> P-ACM -> HX-ACM -> back to T-CAL01 (closed,
-   sealed loop water, temperature-coloured like the rest of the heating
-   circuit). Secondary side: T-ACM <-> HX-ACM is drawn as a plain grey
-   loop (potable water, not part of the sealed-loop colour scheme) plus
-   the cold-mains fill and the hot draw to the shower/sink distribution.
---------------------------------------------------------------------- */
-/* --- VARIANTA B: ACM e acum 100% apă potabilă (gri fix) ---------------
-   Nu mai există buclă intermediară de apă de încălzire: P-ACM trage direct
-   din fundul lui T-ACM1, trece prin gas cooler-ul HX-302 (unde CO₂-ul de
-   ~100 °C o duce la 60 °C într-o singură trecere) și o întoarce în vârful
-   lui T-ACM2. Cele două vase în serie mențin fundul lanțului rece — exact
-   condiția de care depinde câștigul de COP. */
-const POTABLE = 0x93a0a8;
-
-addPipe({ group:gPipeAcm, fluid:'apa', dn:20, fixedColor:POTABLE, circuit:'ACM potabil',
-  from:'Racord apă rece rețea', to:'T-ACM1 jos',
-  points: rackRoute(eqAcmSource.ports.top, V3(0,0.10,0), eqTAcm[0].ports.bottom, V3(0,0,0.34), 0.30),
-  getTemp: s=>12, label:'Apă rece rețea → T-ACM1' });
-
-addPipe({ group:gPipeAcm, fluid:'apa', dn:20, fixedColor:POTABLE, circuit:'ACM potabil',
-  from:'T-ACM1 jos', to:'P-ACM aspirație',
-  points: rackRoute(eqTAcm[0].ports.bottom, V3(-0.34,0,0), eqPumpAcm.ports.in, V3(0.12,0,0), 0.24),
-  getTemp: s=>12, label:'T-ACM1 (jos, rece) → P-ACM' });
-
-addPipe({ group:gPipeAcm, fluid:'apa', dn:20, fixedColor:POTABLE, circuit:'ACM potabil',
-  from:'P-ACM refulare', to:'HX-302 apă IN (jos-față)',
-  points: rackRoute(eqPumpAcm.ports.out, V3(-0.12,0,0.20), eqHx302.ports.waterIn, FRONT_IN, 0.50),
-  getTemp: s=>12, label:'P-ACM → HX-302' });
-
-addPipe({ group:gPipeAcm, fluid:'apa', dn:20, fixedColor:POTABLE, circuit:'ACM potabil',
-  from:'HX-302 apă OUT (sus-față)', to:'T-ACM2 sus',
-  points: rackRoute(eqHx302.ports.waterOut, FRONT_ACM, eqTAcm[1].ports.top, V3(-0.07,0.10,0.06), 2.02),
-  getTemp: s=>s.acmTemp, label:'HX-302 → T-ACM2 (ACM 60 °C)' });
-
-// legătura în serie T-ACM1 sus -> T-ACM2 jos: peste calotă, pe un culoar
-// din spate (z=1,58, în afara mantalei) și intră pe sub vas (y=0,105)
+mountInline(oilRet, V3(1.44,pOSo.y,0.04), (function(){const o=mkDrier(); o.scale.setScalar(0.7); return o;})(), 0.054, {tag:'FO-C301', name:'Filtru ulei — retur', desc:'Reține impuritățile din uleiul care se întoarce în carter, ca să nu blocheze vana electromagnetică și să nu ajungă în lagăre.'});
+mountInline(oilRet, V3(1.34,pOSo.y,0.04), (function(){const o=mkMotorValve(0x2a2d31); o.scale.setScalar(0.7); return o;})(), 0.032, {tag:'EV-OIL', name:'Vană electromagnetică retur ulei', desc:'Deschide returul de ulei doar cât merge compresorul. La oprire se închide, ca gazul de înaltă presiune din separator să nu treacă în carter.', specs:[['Stare fără tensiune','închisă'],['Comandă','în paralel cu contactorul compresorului']]});
+mountInline(oilRet, V3(1.272,pOSo.y,0.04), mkSight(), 0.03, {tag:'SG-OIL', name:'Vizor retur ulei', desc:'Arată că uleiul chiar se întoarce din separator spre compresor.'});
 (function(){
-  const top = eqTAcm[0].ports.top, bot = eqTAcm[1].ports.bottom, ZL = 1.58, YL = 1.92;
-  addPipe({ group:gPipeAcm, fluid:'apa', dn:20, fixedColor:POTABLE, circuit:'ACM potabil',
-    from:'T-ACM1 sus', to:'T-ACM2 jos',
-    points:[ top.clone(), V3(top.x,YL,top.z), V3(top.x,YL,ZL), V3(bot.x,YL,ZL), V3(bot.x,bot.y,ZL), bot.clone() ],
-    getTemp: s=>s.acmTemp-11, label:'serie T-ACM1 → T-ACM2' });
+  // rezistența de carter: element pe fața din spate a carterului, jos
+  const rc = new THREE.Group(); rc.position.set(POS.comp.x, 0.12, POS.comp.z-0.187);
+  const strip = box(0.30,0.03,0.012,MAT.black); rc.add(strip);
+  const cable = cylBetween(V3(0.15,0,0), V3(0.24,0.02,0), 0.004, MAT.black, 6); if(cable) rc.add(cable);
+  rc.userData.attachTo = eqComp.group; gInstruments.add(rc);
+  registerEquip(rc, smallInfo({tag:'RC-C301', name:'Rezistență de încălzire carter', desc:'Ține uleiul din carter cald cât compresorul stă oprit. CO₂-ul se dizolvă foarte bine în ulei rece; fără încălzire, la pornire uleiul spumează și ungerea se pierde. Alimentată permanent când compresorul e oprit.', specs:[['Putere','conform fișei BITZER'],['Funcționare','compresor oprit']]}, rc.position.clone().add(V3(0,0.10,-0.10))));
+  // monitor nivel ulei pe vizorul carterului (fața stângă)
+  const ls = mkSensor(); const lsPos = V3(POS.comp.x-0.23, 0.17, POS.comp.z+0.10);
+  ls.position.copy(lsPos); alignY(ls, D_NX); ls.userData.attachTo = eqComp.group; gInstruments.add(ls);
+  registerEquip(ls, smallInfo({tag:'LS-C301', name:'Monitor nivel ulei carter', desc:'Senzor optoelectronic pe vizorul carterului: oprește compresorul dacă nivelul de ulei scade (uleiul nu se mai întoarce). Contact în lanțul de siguranță, cu semnal către PLC.'}, lsPos.clone().add(V3(-0.12,0.08,0))));
 })();
 
-addPipe({ group:gPipeAcm, fluid:'apa', dn:20, fixedColor:POTABLE, circuit:'ACM potabil',
-  from:'T-ACM2 sus', to:'DIST-ACM (3 dușuri + 2 chiuvete)',
-  points: rackRoute(eqTAcm[1].ports.top, V3(0.07,0.10,-0.05), eqAcmDist.ports.hotIn, V3(0,0.14,0), 2.12),
-  getTemp: s=>s.acmTemp, label:'ACM 60 °C → dușuri/chiuvete' });
+// CO₂ relief vent stacks → exterior (grey: only carry gas if a valve lifts)
+const ventHP = safetyOutlet(eqSVHP), ventREC = safetyOutlet(eqSVREC);
+const ventTop = 2.40;
+addPipe({ group:gAux, fluid:'co2', dn:12, fixedColor:0x8a929a, circuit:'CO₂ siguranță',
+  from:'SV-HP evacuare', to:'exterior', points:R(port('SV-HP evacuare', ventHP, D_UP), [ventHP.x,ventTop,ventHP.z]) });
+port('exterior (SV-HP)', V3(ventHP.x,ventTop,ventHP.z), D_DN); ventCap(V3(ventHP.x,ventTop,ventHP.z));
+addPipe({ group:gAux, fluid:'co2', dn:12, fixedColor:0x8a929a, circuit:'CO₂ siguranță',
+  from:'SV-REC evacuare', to:'exterior', points:R(port('SV-REC evacuare', ventREC, D_UP), [ventREC.x,ventTop,ventREC.z]) });
+port('exterior (SV-REC)', V3(ventREC.x,ventTop,ventREC.z), D_DN); ventCap(V3(ventREC.x,ventTop,ventREC.z));
+const eqSVLP = mountBranch(co2Suct, V3(1.30,0.95,0.815), D_UP, mkSafetyValve(false), {tag:'SV-LP', name:'Supapă de siguranță CO₂ — joasă presiune', desc:'Protejează evaporatorul și linia de aspirație când instalația stă oprită, cu V-301 și V-FGB închise: peste ~30 °C în camera tehnică CO₂-ul trece de 72 bar, peste limita de 75 bar a părții de joasă presiune a compresorului. Evacuare în exterior.', specs:[['Presiune deschidere','≈ 70 bar (≤ PS LP compresor)'],['Evacuare','exterior, țeavă dedicată']]});
+const ventLP = safetyOutlet(eqSVLP);
+addPipe({ group:gAux, fluid:'co2', dn:12, fixedColor:0x8a929a, circuit:'CO₂ siguranță',
+  from:'SV-LP evacuare', to:'exterior', points:R(port('SV-LP evacuare', ventLP, D_UP), [ventLP.x,ventTop,ventLP.z]) });
+port('exterior (SV-LP)', V3(ventLP.x,ventTop,ventLP.z), D_DN); ventCap(V3(ventLP.x,ventTop,ventLP.z));
 
 /* ---------------------------------------------------------------------
-   18. AUX branches — VEX-01 and SV-01 are two INDEPENDENT tees off the
-   primary TUR line (70°C, HX-301 -> tanks) — not one routed through the
-   other. Both branch from the same physical point on that pipe (a real
-   tee fitting), matching how these are actually plumbed on a skid.
+   15. PIPE ROUTES — water source circuit (5/0°C)
 --------------------------------------------------------------------- */
-const primaryTurTee = V3(2.72, SHELF.primaryTur, 1.355); // sits on the primaryTur run (X 2.18–3.38 @ this Y,Z)
-(function teeMarker(){
-  const j = sph(dnR(20)*1.15, new THREE.MeshStandardMaterial({color:0xffffff, metalness:0.4, roughness:0.4}), 12,10);
-  j.position.copy(primaryTurTee);
-  gAux.add(j);
+const srcTop = eqExtSource.ports.top;
+const pXin  = port('SURSĂ-EXT tur', srcTop.clone().add(V3(-0.055,0.02,-0.055)), D_UP);
+const pXout = port('SURSĂ-EXT retur', srcTop.clone().add(V3(0.055,0.02,0.055)), D_UP);
+const pFi = port('Filtru Y intrare', eqFilter.ports.in, D_NX);
+const pFo = port('Filtru Y ieșire', eqFilter.ports.out, D_PX);
+const pP1i = port('P-301 aspirație', eqPumpSrc.ports.in, D_NX);
+const pP1o = port('P-301 refulare', eqPumpSrc.ports.out, D_PX);
+const pEwi = port('E-301 apă IN', eqEvap.ports.waterIn, D_PZ);
+const pEwo = port('E-301 apă OUT', eqEvap.ports.waterOut, D_PZ);
+
+const srcIn = addPipe({ group:gPipeSource, fluid:'apa', dn:25,
+  circuit:'Apă sursă', from:'Racord sursă externă', to:'Filtru Y intrare',
+  points: R(pXin, [pXin.x,pFi.y,pXin.z], [pXin.x,pFi.y,pFi.z], pFi),
+  getTemp: s=>s.apaSrcIn, label:'Apă sursă · IN 5 °C ← din sursa externă', labelT:0.7 });
+const srcFP = addPipe({ group:gPipeSource, fluid:'apa', dn:25,
+  circuit:'Apă sursă', from:'Filtru Y ieșire', to:'P-301 aspirație',
+  points: R(pFo, pP1i), getTemp: s=>s.apaSrcIn });
+const srcToE = addPipe({ group:gPipeSource, fluid:'apa', dn:25,
+  circuit:'Apă sursă', from:'P-301 refulare', to:'E-301 apă IN (jos-față)',
+  points: R(pP1o, [0.92,pP1o.y,pP1o.z], [0.92,pEwi.y,pP1o.z], [1.19,pEwi.y,pP1o.z], [1.19,pEwi.y,1.355], [pEwi.x,pEwi.y,1.355], pEwi),
+  getTemp: s=>s.apaSrcIn, label:'Apă sursă → evaporator', labelT:0.55 });
+const srcRet = addPipe({ group:gPipeSource, fluid:'apa', dn:25,
+  circuit:'Apă sursă', from:'E-301 apă OUT (sus-față)', to:'Racord retur sursă externă',
+  points: R(pEwo, [pEwo.x,pEwo.y,1.515], [pEwo.x,0.42,1.515], [pXout.x,0.42,1.515], [pXout.x,0.42,pXout.z], pXout),
+  getTemp: s=>s.apaSrcOut, label:'Apă sursă · RETUR 0 °C → înapoi la sursă', labelT:0.45 });
+
+mountInline(srcIn, V3(-0.20,pFi.y,pFi.z), mkBall(), 0.04, {tag:'V301S', name:'Izolare sursă IN', desc:'Robinet de izolare pe intrarea circuitului de apă de sursă, înaintea filtrului.'});
+mountBranch(srcIn, V3(0.00,pFi.y,pFi.z), D_NZ, mkTap(), {tag:'D-S01', alt:'D-01 (doc. G3)', name:'Robinet golire — circuit sursă', desc:'Golire în punctul cel mai jos al circuitului de sursă, cu racord de furtun.'});
+mountInline(srcToE, V3(0.92,0.40,pP1o.z), mkFlow(), 0.05, {tag:'FS301', alt:'FT-SURSĂ', name:'Debitmetru / contact de debit — sursă', desc:'Confirmă debitul minim de apă de sursă; fără confirmare PDC nu pornește (interblocare doc. A2 / P&ID). Montat pe refularea P-301, pe tronson vertical drept.', specs:[['Semnal','4–20 mA (AI12)'],['Gamă','0–5 m³/h']]});
+mountBranch(srcToE, V3(0.92,0.56,pP1o.z), D_NX, mkGauge(), {tag:'PT-SURSA', alt:'doc. F AI10', name:'Presiune apă sursă', desc:'Traductor de presiune pe refularea pompei de sursă (doc. F: „PT-SURSA pe tur sursă, după pompă"). Arată dacă pompa chiar dă presiune și protejează circuitul: presiune prea mică înseamnă pompă în gol, filtru Y înfundat sau lipsă de apă în puț.', specs:[['Domeniu','0–10 bar'],['Poziție','după P-301, înainte de FS301']], trend:[{key:'pt_sursa', label:'P sursă', unit:'bar', fluid:'apa'}], gaugeKey:'pt_sursa', gaugeMax:10});
+mountBranch(srcToE, V3(1.19,pEwi.y,1.00), D_NX, mkSensor(), {tag:'TT301S', alt:'TT-SUP', name:'T° apă sursă IN', desc:'Temperatura apei de sursă la intrarea în evaporator (~5 °C).'});
+mountBranch(srcRet, V3(pEwo.x,pEwo.y,1.26), D_PX, mkSensor(), {tag:'TT302S', alt:'TT-SURSĂ-RET', name:'T° apă sursă OUT', desc:'Temperatura apei de sursă la ieșirea din evaporator (~0 °C). Sub 0 °C → oprire PDC, risc de îngheț în evaporator.'});
+mountBranch(srcRet, V3(pEwo.x,pEwo.y,1.38), D_UP, mkVent(), {tag:'AER-S01', name:'Aerisitor automat — punct înalt sursă', desc:'Scoate aerul din punctul cel mai înalt al circuitului de sursă (ieșirea evaporatorului).'});
+mountInline(srcRet, V3(pEwo.x,0.80,1.515), mkBall(), 0.04, {tag:'V302S', name:'Izolare sursă OUT', desc:'Robinet de izolare pe ieșirea din evaporator.'});
+mountInline(srcRet, V3(pXout.x,0.25,pXout.z), mkBall(), 0.04, {tag:'V303S', name:'Izolare retur sursă', desc:'Robinet de izolare pe returul spre sursa externă, chiar la racord (doc. G3).'});
+
+/* ---------------------------------------------------------------------
+   16. PIPE ROUTES — primary heating circuit (PDC ↔ T-CAL01)
+--------------------------------------------------------------------- */
+const pT3 = port('T-CAL01 retur ieșire', eqTankA.ports.retOut, eqTankA.dirs.retOut);
+const pT1 = port('T-CAL01 tur intrare', eqTankA.ports.turIn, eqTankA.dirs.turIn);
+const pT2 = port('T-CAL01 tur ieșire', eqTankA.ports.turOut, eqTankA.dirs.turOut);
+const pT4 = port('T-CAL01 retur intrare', eqTankA.ports.retIn, eqTankA.dirs.retIn);
+const pP2i = port('P-302 aspirație', eqPumpPrim.ports.in, D_PX);
+const pP2o = port('P-302 refulare', eqPumpPrim.ports.out, D_NX);
+const pGwi = port('HX-301 apă IN', eqGasC.ports.waterIn, D_PZ);
+const pGwo = port('HX-301 apă OUT', eqGasC.ports.waterOut, D_PZ);
+
+const primRet = addPipe({ group:gPipePrimary, fluid:'apa', dn:20,
+  circuit:'Încălzire primar', from:'T-CAL01 jos-spate', to:'P-302 aspirație',
+  points: R(pT3, [pT3.x,pT3.y,pP2i.z], [pT3.x,pP2i.y,pP2i.z], pP2i),
+  getTemp: s=>s.apaIncRetur, label:'Apă încălzire · RETUR → PDC', labelT:0.3 });
+const primToGc = addPipe({ group:gPipePrimary, fluid:'apa', dn:20,
+  circuit:'Încălzire primar', from:'P-302 refulare', to:'HX-301 apă IN (jos-față)',
+  points: R(pP2o, [2.00,pP2o.y,pP2o.z], [2.00,pP2o.y,1.355], [pGwi.x,pP2o.y,1.355], [pGwi.x,pGwi.y,1.355], pGwi),
+  getTemp: s=>s.apaIncRetur, label:'Apă încălzire · retur 45 °C', labelT:0.25 });
+const primTur = addPipe({ group:gPipePrimary, fluid:'apa', dn:20,
+  circuit:'Încălzire primar', from:'HX-301 apă OUT (sus-față)', to:'T-CAL01 sus-față',
+  points: R(pGwo, [pGwo.x,pGwo.y,1.515], [pGwo.x,1.74,1.515], [pT1.x,1.74,1.515], [pT1.x,1.74,1.63], [pT1.x,pT1.y,1.63], pT1),
+  getTemp: s=>s.apaIncTur, label:'Apă încălzire · TUR 55 °C', labelT:0.5 });
+
+// VEX-01 on the RETURN, just before P-302, via a lockshield valve
+const pVex = port('VEX-01 racord', eqVex.ports.in, D_DN);
+const vexBr = addPipe({ group:gAux, fluid:'apa', dn:15, teeStart:primRet,
+  circuit:'Siguranță / expansiune', from:'Teu retur P-302', to:'VEX-01',
+  points: R([3.18,pP2i.y,pP2i.z], [3.18,pP2i.y,pVex.z], pVex),
+  getTemp: s=>s.apaIncRetur });
+mountInline(vexBr, V3(3.18,pP2i.y,0.33), mkLockshield(), 0.04, {tag:'V-VEX', name:'Robinet cu capac — vas expansiune', desc:'Robinet de izolare asigurat (fără mâner liber) între instalație și VEX-01: permite verificarea / înlocuirea vasului fără golirea circuitului. Normal deschis.'});
+
+// SV-01 on the flow line straight out of HX-301 — no valve in between
+const sv01Base = V3(2.04,1.40,1.515);
+const sv01Br = addPipe({ group:gAux, fluid:'apa', dn:15, teeStart:primTur,
+  circuit:'Siguranță / expansiune', from:'Teu tur HX-301', to:'SV-01',
+  points: R([pGwo.x,1.30,1.515], [sv01Base.x,1.30,1.515], port('SV-01 intrare', sv01Base, D_DN)),
+  getTemp: s=>s.apaIncTur });
+const eqSV01 = mkSafetyValve(true);
+eqSV01.position.copy(sv01Base); alignY(eqSV01, D_UP); alignX(eqSV01, D_NX, D_UP);
+eqSV01.userData.attachTo = null; gInstruments.add(eqSV01);
+registerEquip(eqSV01, smallInfo({tag:'SV-01', alt:'SV-401', name:'Supapă de siguranță apă — 3 bar', desc:'Protejează circuitul de încălzire la suprapresiune. Montată pe turul care iese din HX-301, ÎNAINTEA robinetului V402H — între sursa de căldură și supapă nu are voie să existe nicio vană. Descarcă vizibil în pâlnia D-SV01.', specs:[['Presiune deschidere','3 bar'],['DN','15']], trend:[{key:'apaIncTur', label:'T° circuit supravegheat', unit:'°C', fluid:'apa'}]}, sv01Base.clone().add(V3(0,0.26,0))));
+(function(){   // contact de stare pe supapa de siguranță (doc. A3.2, DI12)
+  const zs = new THREE.Group();
+  const bx = box(0.05,0.035,0.04,MAT.black); zs.add(bx);
+  const st = cylBetween(V3(0,-0.04,0), V3(0,-0.012,0), 0.006, MAT.steelDark, 8); if(st) zs.add(st);
+  const cab = cylBetween(V3(0.02,0.018,0), V3(0.06,0.05,0), 0.004, MAT.black, 6); if(cab) zs.add(cab);
+  const pos = V3(2.04,1.575,1.515);
+  zs.position.copy(pos); zs.userData.attachTo = eqSV01; gInstruments.add(zs);
+  registerEquip(zs, smallInfo({tag:'ZS-SV01', alt:'SV-401-OPEN (doc. A3.2 DI12)', name:'Contact de stare SV-01',
+    desc:'Microcontact pe supapa de siguranță: anunță PLC-ul când SV-01 s-a deschis. Fără el, o deschidere trecătoare rămâne nesesizată și nimeni nu află că instalația a trecut prin suprapresiune.',
+    specs:[['Tip','contact NO'],['Semnal','DI12 — SV-401-OPEN']]}, pos.clone().add(V3(0,0.13,0))));
 })();
+const sv01Out = safetyOutlet(eqSV01);
+const eqDrainSV = buildDrainFunnel(V3(sv01Out.x-0.05, DECK_Y, sv01Out.z), 'D-SV01', 'Pâlnie de golire pentru SV-01 — primește descărcarea supapei de siguranță dacă circuitul de încălzire depășește 3 bar. Legată la canalizare cu sifon.');
+const sv01Drain = addPipe({ group:gAux, fluid:'apa', dn:15, fixedColor:0x8a929a, circuit:'Siguranță / expansiune',
+  from:'SV-01 evacuare', to:'D-SV01',
+  points: R(port('SV-01 evacuare', sv01Out, D_NX), [sv01Out.x-0.05,sv01Out.y,sv01Out.z], port('D-SV01 pâlnie', eqDrainSV.ports.in, D_UP)) });
 
-addPipe({ group:gAux, fluid:'apa', dn:15,
-  circuit:'Auxiliar', from:'Teu pe linia TUR', to:'VEX-01',
-  points: [primaryTurTee,
-           V3(primaryTurTee.x, primaryTurTee.y, eqVex.ports.in.z),
-           V3(eqVex.ports.in.x-0.26, primaryTurTee.y, eqVex.ports.in.z),
-           V3(eqVex.ports.in.x-0.26, eqVex.ports.in.y, eqVex.ports.in.z),
-           eqVex.ports.in.clone()],
-  getTemp: s=>s.apaIncTur, label:'VEX-01' });
+mountInline(primRet, V3(pT3.x,pT3.y,0.77), mkBall(), 0.04, {tag:'VT-CAL01', name:'Izolare retur T-CAL01', desc:'Robinet de izolare la racordul de retur al rezervorului.'});
+mountInline(primRet, V3(pT3.x,pT3.y,0.60), mkStrainer(), 0.065, {tag:'FY-302', name:'Filtru Y — retur încălzire', desc:'Protejează pompa P-302 și plăcile lui HX-301 (doc. G4: returul trece prin robineți de izolare și filtru Y înainte de P 302). Schimbătoarele brazate se înfundă ușor cu zgură din instalație.'});
+mountBranch(primRet, V3(3.02,pP2i.y,pP2i.z), D_NZ, mkFill(), {tag:'V-UMPLERE', name:'Robinet umplere / completare (circuit închis)', desc:'Punct de umplere inițială și completare a presiunii, lângă vasul de expansiune. Se leagă cu furtun la apa rece prin separator hidraulic / clapetă antiretur — apa de încălzire nu are voie să ajungă în rețeaua potabilă. Normal închis.', specs:[['Stare normală','închis'],['Protecție','clapetă antiretur integrată']]});
+mountInline(primRet, V3(2.84,pP2i.y,pP2i.z), mkBall(), 0.04, {tag:'V-302A', name:'Izolare aspirație P-302', desc:'Permite schimbarea pompei fără golirea instalației.'});
+mountInline(primToGc, V3(2.50,pP2o.y,pP2o.z), mkCheck(), 0.035, {tag:'NRV-302', alt:'V2 (doc. F)', name:'Clapetă de reținere P-302', desc:'Împiedică circulația inversă prin HX-301 când P-302 e oprită și merge doar P-303.'});
+mountInline(primToGc, V3(2.38,pP2o.y,pP2o.z), mkBall(), 0.04, {tag:'V-302B', name:'Izolare refulare P-302', desc:'Permite schimbarea pompei și a clapetei fără golirea instalației.'});
+mountBranch(primToGc, V3(2.22,pP2o.y,pP2o.z), D_UP, mkGauge(), {tag:'PT-APĂ', alt:'PT-HP (doc. A2/A3.2 AI11)', name:'Presiune apă — circuit încălzire', desc:'Traductor 0–6 bar + manometru, pe refularea P-302 (doc. F: PT-APĂ pe tur, după pompă). Interblocare: sub 1,0 bar (lipsă apă / aer) PDC nu pornește; peste 2,5 bar alarmă, înainte să deschidă SV-01.', specs:[['Domeniu','0–6 bar'],['Prag jos / sus','1,0 / 2,5 bar']], trend:[{key:'pt_apa', label:'P apă', unit:'bar', fluid:'apa'}], gaugeKey:'pt_apa', gaugeMax:6});
+mountInline(primToGc, V3(2.00,pP2o.y,0.90), mkFlow(), 0.05, {tag:'FT-302', name:'Debitmetru circuit încălzire', desc:'Debitul de apă prin gas cooler, cerut în documentul F pe circuitul de apă caldă. Împreună cu TT401 și TT402 dă și energia termică produsă (contor de energie), adică singurul mod de a ști COP-ul real al instalației.', specs:[['Semnal','4–20 mA'],['Gamă','0–3 m³/h'],['Rol secundar','contor de energie cu TT401 / TT402']]});
+mountInline(primToGc, V3(pGwi.x,0.30,1.355), mkBall(), 0.04, {tag:'V401H', name:'Izolare retur încălzire (intrare HX-301)'});
+mountBranch(primToGc, V3(pGwi.x,0.52,1.355), D_NX, mkSensor(), {tag:'TT401', alt:'TT-HP-RET', name:'T° retur încălzire', desc:'Temperatura apei înainte de gas cooler (~45 °C). Protecție ΔT.'});
+mountBranch(primTur, V3(pGwo.x,pGwo.y,1.25), D_PX, mkSensor(), {tag:'TT402', alt:'TT-HP-TUR', name:'T° tur PDC (după HX-301)', desc:'Temperatura apei imediat după gas cooler (~55 °C în încălzire, ~65 °C la încărcarea ACM). Variabila principală de control a PDC.'});
+mountBranch(primTur, V3(pGwo.x,pGwo.y,1.37), D_UP, mkThermostat(), {tag:'TS-01', name:'Termostat de siguranță 95 °C', desc:'Contact NC care deschide peste 95 °C și taie direct compresorul, independent de PLC (doc. G2).'});
+mountInline(primTur, V3(pGwo.x,1.50,1.515), mkBall(), 0.04, {tag:'V402H', name:'Izolare tur încălzire (ieșire HX-301)', desc:'Montat DUPĂ teul supapei SV-01, ca supapa să rămână legată de schimbător chiar și cu robinetul închis.'});
+mountBranch(primTur, V3(2.36,1.74,1.515), D_UP, mkVent(), {tag:'AER-01', name:'Aerisitor automat — punct înalt tur', desc:'Punctul cel mai înalt al buclei primare, pe traseul spre T-CAL01.'});
+mountOnPort(eqTankA, 'vent', mkVent(), {tag:'AER-CAL01', alt:'AER-301', name:'Aerisitor automat T-CAL01', desc:'Pe capacul rezervorului — elimină aerul adunat sus (doc. H2: AER-3xx pe fiecare rezervor).'});
+mountOnPort(eqTankA, 'drain', mkTap(), {tag:'D-01', name:'Robinet golire T-CAL01', desc:'Golire la baza rezervorului, cu racord de furtun (doc. H1: robineți golire la baza fiecărui rezervor).'});
+mountOnShell(eqTankA, 45, 0.95, mkSensor(), {tag:'TT-CAL01', alt:'TT-V303-TOP', name:'T° sus T-CAL01 (rezervă tur)', desc:'Temperatura din partea de sus a rezervorului — din ea P-303 ia turul spre calorifere. Sub 45 °C prioritatea revine încălzirii.'});
+mountOnShell(eqTankA, 45, 0.20, mkSensor(), {tag:'TT-CAL01-JOS', alt:'TT-V301-BOT', name:'T° jos T-CAL01 (retur)', desc:'Temperatura din baza rezervorului, de unde P-302 trage returul spre HX-301. Arată stratificarea și cât „rece" primește gas cooler-ul.'});
 
-addPipe({ group:gAux, fluid:'apa', dn:15,
-  circuit:'Auxiliar', from:'Teu pe linia TUR', to:'SV-01',
-  points: [primaryTurTee, V3(eqSafety.ports.in.x, primaryTurTee.y, primaryTurTee.z), V3(eqSafety.ports.in.x, primaryTurTee.y, eqSafety.ports.in.z), eqSafety.ports.in],
-  getTemp: s=>s.apaIncTur, label:'SV-01 · 3 bar' });
+/* ---------------------------------------------------------------------
+   17. PIPE ROUTES — secondary / consumers circuit (calorifere)
+--------------------------------------------------------------------- */
+const pP3i = port('P-303 aspirație', eqPumpSec.ports.in, D_NX);
+const pP3o = port('P-303 refulare', eqPumpSec.ports.out, D_PX);
+const pMt = port('DIST-01 tur', eqManifold.ports.tur, D_NZ);
+const pMr = port('DIST-01 retur', eqManifold.ports.retur, D_NZ);
 
-// SV-01's discharge -> drain funnel: a plain grey stub (not a live process
-// line, no fluid colour) so it's obvious this only carries flow if the
-// valve actually opens, and it visibly *goes* somewhere instead of
-// stopping in mid-air.
-(function buildDrainLine(){
-  const mat = new THREE.MeshStandardMaterial({color:0x8a929a, metalness:0.5, roughness:0.5});
-  const pts = [eqSafety.ports.discharge, V3(eqSafety.ports.discharge.x, eqSafety.ports.discharge.y-0.25, eqSafety.ports.discharge.z+0.03), eqDrain.ports.in];
-  for(let i=0;i<pts.length-1;i++){
-    const seg = cylBetween(pts[i], pts[i+1], 0.013, mat);
-    if(seg) gAux.add(seg);
-  }
-  const spr = makeSprite(['Evacuare SV-01 → golire'], {size:10, worldH:0.07, bg:'rgba(14,18,24,.82)', border:'rgba(154,167,181,.5)'});
-  spr.position.copy(pathPointAt(pts,0.5)).add(V3(0.10,0,0));
-  gLabelsPipe.add(spr);
-})();
+const secSup = addPipe({ group:gPipeSecond, fluid:'apa', dn:20,
+  circuit:'Încălzire secundar', from:'T-CAL01 sus-dreapta', to:'P-303 aspirație',
+  points: R(pT2, [3.88,pT2.y,pT2.z], [3.88,pP3i.y,pT2.z], pP3i),
+  getTemp: s=>s.apaConsTur, label:'spre P-303 · 55 °C', labelT:0.35 });
+const secTur = addPipe({ group:gPipeSecond, fluid:'apa', dn:20,
+  circuit:'Încălzire secundar', from:'P-303 refulare', to:'DIST-01 tur',
+  points: R(pP3o, [pMt.x,pP3o.y,pP3o.z], [pMt.x,pMt.y,pP3o.z], pMt),
+  getTemp: s=>s.apaConsTur, label:'Apă consumatori · TUR 55 °C', labelT:0.5 });
+const secRet = addPipe({ group:gPipeSecond, fluid:'apa', dn:20,
+  circuit:'Încălzire secundar', from:'DIST-01 retur', to:'T-CAL01 jos-dreapta',
+  points: R(pMr, [pMr.x,pT4.y,1.75], [3.77,pT4.y,1.75], [3.77,pT4.y,pT4.z], pT4),
+  getTemp: s=>s.apaConsRetur, label:'Apă consumatori · RETUR 45 °C', labelT:0.4 });
 
-// Fill/make-up valve -> taps into the sealed loop right at VEX-01's base
-// (a normally-closed branch — greyed out, not part of the live flow colours).
-(function buildFillLine(){
-  const mat = new THREE.MeshStandardMaterial({color:0x8a929a, metalness:0.5, roughness:0.5});
-  const pts = [eqFillValve.ports.out, V3(eqVex.ports.in.x, eqFillValve.ports.out.y, eqVex.ports.in.z), eqVex.ports.in];
-  for(let i=0;i<pts.length-1;i++){
-    const seg = cylBetween(pts[i], pts[i+1], 0.012, mat);
-    if(seg) gAux.add(seg);
-  }
-  const spr = makeSprite(['V-UMPLERE (normal închis)'], {size:10, worldH:0.07, bg:'rgba(14,18,24,.82)', border:'rgba(154,167,181,.5)'});
-  spr.position.copy(pathPointAt(pts,0.5)).add(V3(0,0.06,0));
-  gLabelsPipe.add(spr);
-})();
+mountInline(secSup, V3(4.03,pP3i.y,pP3i.z), mkBall(), 0.04, {tag:'V-303A', name:'Izolare aspirație P-303', desc:'doc. H1: robineți izolare pe P-203.'});
+mountInline(secTur, V3(4.33,pP3o.y,pP3o.z), mkCheck(), 0.035, {tag:'NRV-303', name:'Clapetă de reținere P-303', desc:'Oprește circulația naturală (termosifon) spre calorifere când pompa e oprită.'});
+mountInline(secTur, V3(4.425,pP3o.y,pP3o.z), mkBall(), 0.04, {tag:'V-303B', name:'Izolare refulare P-303'});
+mountBranch(secTur, V3(pMt.x,pMt.y,1.30), D_UP, mkVent(), {tag:'AER-02', name:'Aerisitor automat — punct înalt calorifere'});
+mountInline(secTur, V3(pMt.x,pMt.y,1.55), mkBall(), 0.04, {tag:'V501H', name:'Izolare tur instalație'});
+mountBranch(secTur, V3(pMt.x,pMt.y,1.76), D_UP, mkSensor(), {tag:'TT501', alt:'TT-HT-TUR', name:'T° tur instalație', desc:'Temperatura apei livrate caloriferelor (~55 °C). Control P-303.'});
+mountBranch(secRet, V3(4.10,pT4.y,1.75), D_UP, mkSensor(), {tag:'TT502', alt:'TT-HT-RET', name:'T° retur instalație', desc:'Temperatura returului de la calorifere (~45 °C). Alarmă non-critică dacă e prea mare (instalație subdimensionată / debit mic).'});
+mountBranch(secRet, V3(3.92,pT4.y,1.75), D_PZ, mkTap(), {tag:'D-02', name:'Robinet golire — retur calorifere', desc:'Golire în punctul jos al buclei de calorifere.'});
+mountInline(secRet, V3(3.77,pT4.y,1.46), mkBall(), 0.04, {tag:'V502H', name:'Izolare retur instalație'});
+
+
+/* ---------------------------------------------------------------------
+   17b. PIPE ROUTES — ACM (100% apă potabilă, gri fix)
+--------------------------------------------------------------------- */
+const POTABLE = 0x93a0a8;
+const pA1c = port('T-ACM1 apă rece', eqTAcm1.ports.coldIn, eqTAcm1.dirs.coldIn);
+const pA1q = port('T-ACM1 încărcare ieșire', eqTAcm1.ports.chargeOut, eqTAcm1.dirs.chargeOut);
+const pA1s = port('T-ACM1 serie ieșire', eqTAcm1.ports.seriesOut, eqTAcm1.dirs.seriesOut);
+const pA2s = port('T-ACM2 serie intrare', eqTAcm2.ports.seriesIn, eqTAcm2.dirs.seriesIn);
+const pA2q = port('T-ACM2 încărcare intrare', eqTAcm2.ports.chargeIn, eqTAcm2.dirs.chargeIn);
+const pA2h = port('T-ACM2 ACM ieșire', eqTAcm2.ports.hotOut, eqTAcm2.dirs.hotOut);
+const pPAi = port('P-ACM aspirație', eqPumpAcm.ports.in, D_PX);
+const pPAo = port('P-ACM refulare', eqPumpAcm.ports.out, D_NX);
+const pHwi = port('HX-302 apă IN', eqHx302.ports.waterIn, D_PZ);
+const pHwo = port('HX-302 apă OUT', eqHx302.ports.waterOut, D_PZ);
+const pMains = port('APĂ RECE rețea', eqAcmSource.ports.top, D_UP);
+const pDacm = port('DIST-ACM intrare', eqAcmDist.ports.hotIn, D_UP);
+
+const acmMains = addPipe({ group:gPipeAcm, fluid:'apa', dn:20, fixedColor:POTABLE, circuit:'ACM potabil',
+  from:'Racord apă rece rețea', to:'T-ACM1 jos-față',
+  points: R(pMains, [pMains.x,pA1c.y,pMains.z], [pA1c.x,pA1c.y,pMains.z], pA1c),
+  getTemp: s=>12, label:'Apă rece rețea → grup siguranță → T-ACM1', labelT:0.35 });
+const acmSuct = addPipe({ group:gPipeAcm, fluid:'apa', dn:20, fixedColor:POTABLE, circuit:'ACM potabil',
+  from:'T-ACM1 jos-spate', to:'P-ACM aspirație',
+  points: R(pA1q, [pA1q.x,pA1q.y,pPAi.z], [pA1q.x,pPAi.y,pPAi.z], pPAi),
+  getTemp: s=>12, label:'T-ACM1 (jos, rece) → P-ACM', labelT:0.55 });
+const acmCharge = addPipe({ group:gPipeAcm, fluid:'apa', dn:20, fixedColor:POTABLE, circuit:'ACM potabil',
+  from:'P-ACM refulare', to:'HX-302 apă IN (jos-față)',
+  points: R(pPAo, [3.62,pPAo.y,pPAo.z], [3.62,0.50,pPAo.z], [2.51,0.50,pPAo.z], [2.51,0.50,1.355], [2.51,pHwi.y,1.355], [pHwi.x,pHwi.y,1.355], pHwi),
+  getTemp: s=>12, label:'P-ACM → MV-ACM → HX-302', labelT:0.3 });
+const acmHot = addPipe({ group:gPipeAcm, fluid:'apa', dn:20, fixedColor:POTABLE, circuit:'ACM potabil',
+  from:'HX-302 apă OUT (sus-față)', to:'T-ACM2 sus-față',
+  points: R(pHwo, [pHwo.x,pHwo.y,1.61], [pHwo.x,2.02,1.61], [pA2q.x,2.02,1.61], [pA2q.x,pA2q.y,1.61], pA2q),
+  getTemp: s=>s.acmTemp, label:'HX-302 → T-ACM2 (ACM 60 °C)', labelT:0.5 });
+const acmSeries = addPipe({ group:gPipeAcm, fluid:'apa', dn:20, fixedColor:POTABLE, circuit:'ACM potabil',
+  from:'T-ACM1 sus-dreapta', to:'T-ACM2 jos-stânga',
+  points: R(pA1s, [5.30,pA1s.y,pA1s.z], [5.30,pA2s.y,pA2s.z], pA2s),
+  getTemp: s=>s.acmTemp-11, label:'serie T-ACM1 → T-ACM2', labelT:0.5 });
+const acmOut = addPipe({ group:gPipeAcm, fluid:'apa', dn:20, fixedColor:POTABLE, circuit:'ACM potabil',
+  from:'T-ACM2 capac sus', to:'DIST-ACM (3 dușuri + 2 chiuvete)',
+  points: R(pA2h, [pA2h.x,1.95,pA2h.z], [pDacm.x,1.95,pA2h.z], pDacm),
+  getTemp: s=>s.acmTemp, label:'ACM 60 °C → dușuri/chiuvete', labelT:0.6 });
+
+// grup de siguranță pe apa rece: izolare → reductor → antiretur → (VEX, SV) → boiler
+mountInline(acmMains, V3(5.44,pA1c.y,pMains.z), mkBall(), 0.04, {tag:'V-AR', name:'Robinet izolare apă rece', desc:'Izolează toată partea de ACM de rețea.'});
+mountInline(acmMains, V3(5.28,pA1c.y,pMains.z), mkReducer(), 0.045, {tag:'RP-AR', name:'Reductor de presiune apă rece', desc:'Coboară presiunea rețelei la ~4 bar, sub pragul supapei de 6 bar — altfel SV-ACM ar picura la fiecare încărcare.', specs:[['Presiune reglată','≈ 4 bar']]});
+mountInline(acmMains, V3(5.12,pA1c.y,pMains.z), mkCheck(), 0.035, {tag:'NRV-AR', name:'Clapetă antiretur apă rece', desc:'Obligatorie: apa din boilere nu are voie să se întoarcă în rețeaua publică. După ea, până la boiler, nu se mai montează nicio vană — doar vasul de expansiune și supapa de siguranță.'});
+const pVexAcm = port('VEX-ACM racord', eqVexAcm.ports.in, D_DN);
+const vexAcmBr = addPipe({ group:gPipeAcm, fluid:'apa', dn:15, fixedColor:POTABLE, teeStart:acmMains,
+  circuit:'Siguranță / expansiune', from:'Teu apă rece', to:'VEX-ACM',
+  points: R([pA1c.x,pA1c.y,pVexAcm.z], pVexAcm), getTemp: s=>12 });
+const svAcmBase = V3(pA1c.x,0.33,1.68);
+const svAcmBr = addPipe({ group:gPipeAcm, fluid:'apa', dn:15, fixedColor:POTABLE, teeStart:acmMains,
+  circuit:'Siguranță / expansiune', from:'Teu apă rece', to:'SV-ACM',
+  points: R([pA1c.x,pA1c.y,svAcmBase.z], port('SV-ACM intrare', svAcmBase, D_DN)), getTemp: s=>12 });
+const eqSVACM = mkSafetyValve(true);
+eqSVACM.position.copy(svAcmBase); gInstruments.add(eqSVACM);
+registerEquip(eqSVACM, smallInfo({tag:'SV-ACM', name:'Supapă de siguranță ACM — 6 bar', desc:'Obligatorie la boilere sub presiune: protejează vasele dacă presiunea crește la încălzire (de ex. vas de expansiune descărcat). Între ea și boiler nu are voie să existe nicio vană. Descarcă în pâlnia D-ACM.', specs:[['Presiune deschidere','6 bar'],['DN','15']]}, svAcmBase.clone().add(V3(0,0.26,0))));
+const svAcmOut = safetyOutlet(eqSVACM);
+const eqDrainAcm = buildDrainFunnel(V3(svAcmOut.x+0.07, DECK_Y, svAcmOut.z), 'D-ACM', 'Pâlnie de golire pentru SV-ACM, cu sifon spre canalizare.');
+const svAcmDrain = addPipe({ group:gAux, fluid:'apa', dn:15, fixedColor:0x8a929a, circuit:'Siguranță / expansiune',
+  from:'SV-ACM evacuare', to:'D-ACM',
+  points: R(port('SV-ACM evacuare', svAcmOut, D_PX), [svAcmOut.x+0.07,svAcmOut.y,svAcmOut.z], port('D-ACM pâlnie', eqDrainAcm.ports.in, D_UP)) });
+mountBranch(acmMains, V3(pA1c.x,pA1c.y,1.575), D_NX, mkTap(), {tag:'D-ACM1', name:'Robinet golire T-ACM1', desc:'Golirea boilerului 1, pe racordul de apă rece (punctul cel mai jos).'});
+
+mountInline(acmSuct, V3(pA1q.x,pA1q.y,0.70), mkBall(), 0.04, {tag:'VT-ACM1', name:'Izolare încărcare T-ACM1'});
+mountInline(acmSuct, V3(4.06,pPAi.y,pPAi.z), mkBall(), 0.04, {tag:'V-ACM-A', name:'Izolare aspirație P-ACM'});
+mountInline(acmCharge, V3(3.745,pPAo.y,pPAo.z), mkCheck(), 0.035, {tag:'NRV-ACM', name:'Clapetă de reținere P-ACM', desc:'Împiedică întoarcerea apei calde din HX-302 spre pompă.'});
+mountInline(acmCharge, V3(3.62,0.32,pPAo.z), mkBall(), 0.04, {tag:'V-ACM-B', name:'Izolare refulare P-ACM'});
+mountInline(acmCharge, V3(3.05,0.50,pPAo.z), mkMotorValve(0x2f6fb0), 0.045, {tag:'MV-ACM', name:'Vană cu motor încărcare ACM (normal închisă)', desc:'Se deschide doar cât merge P-ACM. Fără ea, la un duș cu P-ACM oprită apa rece ar putea ocoli boilerele: T-ACM1 jos → P-ACM → HX-302 → vârful lui T-ACM2 → direct la dușuri. O clapetă n-ar ajuta — apa ar curge în același sens ca la încărcare.', specs:[['Stare fără tensiune','închisă'],['Comandă','PLC, împreună cu P-ACM']]});
+mountBranch(acmHot, V3(pHwo.x,pHwo.y,1.30), D_PX, mkSensor(), {tag:'TT-ACM-HX', name:'T° apă ieșire HX-302', desc:'După ea se modulează turația P-ACM, ca apa să intre în T-ACM2 la 60 °C.'});
+mountBranch(acmHot, V3(5.45,2.02,1.61), D_UP, mkVent(), {tag:'AER-ACM', name:'Aerisitor — punct înalt buclă încărcare ACM', desc:'Aerisitor pentru apă potabilă, în punctul cel mai înalt al buclei de încărcare.'});
+mountInline(acmOut, V3(pDacm.x,1.20,pDacm.z), mkBall(), 0.04, {tag:'V-ACM-OUT', name:'Izolare ieșire ACM spre dușuri'});
+mountOnPort(eqTAcm2, 'drain', mkTap(), {tag:'D-ACM2', name:'Robinet golire T-ACM2', desc:'Golire la baza boilerului 2.'});
+mountOnShell(eqTAcm2, 45, 1.40, mkSensor(), {tag:'TT-ACM', name:'T° livrare ACM (T-ACM2 sus)', desc:'Temperatura apei calde la punctul de livrare — sub 55 °C pornește reîncărcarea (prioritate ACM), la 60 °C se oprește. Tot ea urmărește ciclul zilnic anti-Legionella.'});
+mountOnShell(eqTAcm1, 45, 0.20, mkSensor(), {tag:'TT-ACM-JOS', name:'T° bază lanț ACM (T-ACM1 jos)', desc:'Confirmă că apa trimisă spre HX-302 e cu adevărat rece — condiția de care depinde câștigul de COP al variantei B.'});
+
+// items that are not mounted with mountInline/mountBranch but still live on one run
+eqSV01.userData.hostPipe = sv01Br;
+eqSVACM.userData.hostPipe = svAcmBr;
+eqDrainSV.group.userData.hostPipe = sv01Drain;
+eqDrainAcm.group.userData.hostPipe = svAcmDrain;
+eqVex.group.userData.hostPipe = vexBr;
+eqVexAcm.group.userData.hostPipe = vexAcmBr;
+eqFilter.group.userData.hostPipe = srcFP;
+
+window.PDC.model = { pipes:pipeRegistry, equip:equipRegistry, ports:PORTS, warnings:MODEL_WARN, struct:STRUCT_SEGS, groups:{gStructure, gEquipment, gInstruments} };
 
 /* ---------------------------------------------------------------------
    19. FLOW PARTICLES — speed is driven by each pipe's real velocity
@@ -1977,7 +2473,7 @@ buildRiders();
    so they can be used as a cutting list; the bend count tells you how
    many elbow fittings each run needs.
 --------------------------------------------------------------------- */
-const CIRCUIT_ORDER = ['CO₂','Apă sursă','Încălzire primar','Încălzire secundar','ACM primar','ACM potabil','Auxiliar'];
+const CIRCUIT_ORDER = ['CO₂','Ulei compresor','CO₂ încărcare','CO₂ siguranță','Apă sursă','Încălzire primar','Încălzire secundar','ACM potabil','Siguranță / expansiune'];
 function renderLineList(){
   const el = document.getElementById('linesBody');
   if(!el) return;
@@ -1993,14 +2489,15 @@ function renderLineList(){
     groups[c].forEach(p=>{
       const route = (p.from && p.to) ? `${p.from} → ${p.to}` : (p.label||'—');
       html += `<div class="lnRow"><div class="d">${route}</div>
-        <div class="n">${(DN_REAL[p.dn]||('DN'+p.dn)).split(' ')[0]}<br>${p.len.toFixed(2)} m<br>${p.bends} cot.</div></div>`;
+        <div class="n">${(DN_REAL[p.dn]||('DN'+p.dn)).split(' ')[0]}<br>${p.len.toFixed(2)} m<br>${p.bends} cot.</div></div>`
+        + (p.fittings.length ? `<div class="lnFit" style="font-size:10px;color:var(--text-faint);margin:-2px 0 6px 0;">pe linie: ${p.fittings.join(' · ')}</div>` : '');
     });
   });
   const perDn = {};
   pipeRegistry.forEach(p=>{ perDn[p.dn] = (perDn[p.dn]||0) + p.len; });
   html += '<div class="lnTot"><b>Total țeavă pe diametru</b><br>' +
     Object.keys(perDn).sort((a,b)=>a-b).map(dn=>`${DN_REAL[dn]||('DN'+dn)} — <b>${perDn[dn].toFixed(2)} m</b>`).join('<br>') +
-    `<br><br>Coturi total: <b>${pipeRegistry.reduce((n,p)=>n+p.bends,0)}</b> · racorduri: <b>${pipeRegistry.length*2}</b></div>`;
+    `<br><br>Coturi total: <b>${pipeRegistry.reduce((n,p)=>n+p.bends,0)}</b> · racorduri: <b>${pipeRegistry.filter(p=>!p.teeStart).length*2 - pipeRegistry.filter(p=>p.teeEnd).length}</b> · teuri: <b>${pipeRegistry.filter(p=>p.teeStart||p.teeEnd).length}</b> · armături pe linie: <b>${pipeRegistry.reduce((n,p)=>n+p.fittings.length,0)}</b></div>`;
   html += `<div class="lnNote"><b>De reținut înainte de execuție:</b> lungimile sunt exacte pentru <i>acest</i> aranjament
     (axa curbelor, rază cot ≈ 1,5×D) — dar poziția componentelor folosește dimensiuni de gabarit aproximative.
     Verifică fiecare cotă față de fișele reale ale echipamentelor comandate înainte să tai țeavă, și adaugă rezervă
@@ -2010,32 +2507,182 @@ function renderLineList(){
 renderLineList();
 
 /* ---------------------------------------------------------------------
-   20. LAYERS PANEL
+   20. LAYERS — a category tree. Every registered item and every pipe gets
+   exactly one sub-category; the panel toggles them individually, by whole
+   category, "solo" (only this), or via presets. With the host filter on,
+   a fitting or sensor is shown only if the pipe / equipment it sits on is.
 --------------------------------------------------------------------- */
-const LAYERS = [
-  {key:'equip', label:'Echipamente principale', group:gEquipment, color:'#9aa3ab', on:true},
-  {key:'labelsEquip', label:'Etichete echipamente', group:gLabelsEquip, color:'#dce3ea', on:true},
-  {key:'co2', label:'Traseu CO₂', group:gPipeCO2, color:'hsl(27 85% 42%)', on:true},
-  {key:'source', label:'Apă sursă (5/0°C)', group:gPipeSource, color:'hsl(207 60% 55%)', on:true},
-  {key:'primary', label:'Apă încălzire — primar', group:gPipePrimary, color:'hsl(207 78% 32%)', on:true},
-  {key:'secondary', label:'Apă consumatori — secundar', group:gPipeSecond, color:'hsl(207 65% 42%)', on:true},
-  {key:'acm', label:'ACM — 2×300 l + HX-302 (potabilă)', group:gPipeAcm, color:'hsl(207 50% 50%)', on:true},
-  {key:'aux', label:'Vas expansiune / siguranță', group:gAux, color:'#c9932f', on:true},
-  {key:'labelsPipe', label:'Etichete conducte (CO₂/apă/tur/retur)', group:gLabelsPipe, color:'#dce3ea', on:true},
-  {key:'instruments', label:'Vane, senzori, manometre', group:gInstruments, color:'#6fb0f0', on:true},
-  {key:'flow', label:'Animație flux', group:gParticles, color:'#ffffff', on:true},
+const CATS = [
+  {key:'equip', label:'Echipamente', subs:[
+    {key:'eCOMP', label:'Compresor și accesorii', color:'#2c6b4b'},
+    {key:'eHX',   label:'Schimbătoare (gas coolere, evaporator)', color:'#8d949b'},
+    {key:'eTANK', label:'Rezervoare și boilere', color:'#ece9df'},
+    {key:'eVES',  label:'Vase (receiver, separator, expansiune)', color:'#b23a2f'},
+    {key:'ePUMP', label:'Pompe', color:'#b0463d'},
+    {key:'eCONN', label:'Racorduri externe', color:'#6b727a'},
+    {key:'eMISC', label:'Tablou electric și butelii CO₂', color:'#d6d3c8'},
+  ]},
+  {key:'pipes', label:'Conducte', subs:[
+    {key:'pCO2',  label:'CO₂ — circuit frigorific', color:'hsl(27 85% 42%)'},
+    {key:'pOIL',  label:'Ulei compresor', color:'#9a7424'},
+    {key:'pCHG',  label:'Încărcare CO₂ (butelii)', color:'#c58a4a'},
+    {key:'pVENT', label:'Evacuări supape CO₂', color:'#8a929a'},
+    {key:'pSRC',  label:'Apă sursă', color:'hsl(207 60% 55%)'},
+    {key:'pPRI',  label:'Încălzire — primar (PDC ↔ T-CAL01)', color:'hsl(207 78% 32%)'},
+    {key:'pSEC',  label:'Încălzire — calorifere', color:'hsl(207 65% 42%)'},
+    {key:'pACM',  label:'ACM — apă potabilă', color:'#93a0a8'},
+    {key:'pSAF',  label:'Expansiune, supape apă, goliri', color:'#c9932f'},
+  ]},
+  {key:'fit', label:'Armături', subs:[
+    {key:'aISO', label:'Robineți de izolare', color:'#2f6fb0'},
+    {key:'aNRV', label:'Clapete de reținere', color:'#a88a4c'},
+    {key:'aCTL', label:'Vane de reglaj / comandate', color:'#3a3f45'},
+    {key:'aFLT', label:'Filtre și vizoare', color:'#2e7d4f'},
+    {key:'aSV',  label:'Supape de siguranță', color:'#e2544a'},
+    {key:'aAER', label:'Aerisitoare', color:'#c9a24a'},
+    {key:'aDRN', label:'Goliri, umplere, service', color:'#8a929a'},
+  ]},
+  {key:'inst', label:'Senzori și instrumente', subs:[
+    {key:'sT', label:'Temperatură (TT, TS)', color:'#e0782f'},
+    {key:'sP', label:'Presiune (PT, manometre)', color:'#6fb0f0'},
+    {key:'sF', label:'Debit și nivel', color:'#49c47a'},
+  ]},
+  {key:'other', label:'Structură și animație', subs:[
+    {key:'deck', label:'Platformă', color:'#848d95'},
+    {key:'rack', label:'Suporturi conducte', color:'#9aa3ab'},
+    {key:'flow',   label:'Animație flux', color:'#ffffff'},
+  ]},
+  {key:'labels', label:'Etichete', subs:[
+    {key:'lEq',   label:'Echipamente', color:'#dce3ea'},
+    {key:'lSm',   label:'Armături și senzori', color:'#9aa7b5'},
+    {key:'lPipe', label:'Conducte', color:'#dce3ea'},
+  ]},
 ];
-const layerBody = document.getElementById('layerBody');
-LAYERS.forEach(L=>{
-  const row = document.createElement('div'); row.className='layerRow';
-  row.innerHTML = `<span class="swatch" style="background:${L.color}"></span><label>${L.label}</label><button class="toggle ${L.on?'on':''}" data-key="${L.key}"></button>`;
-  layerBody.appendChild(row);
-  row.querySelector('.toggle').addEventListener('click', (e)=>{
-    L.on = !L.on;
-    L.group.visible = L.on;
-    e.currentTarget.classList.toggle('on', L.on);
+const MODEL_CATS = ['equip','pipes','fit','inst'];
+const ALL_PIPE_SUBS = ['pCO2','pOIL','pCHG','pVENT','pSRC','pPRI','pSEC','pACM','pSAF'];
+const ALL_FIT_SUBS  = ['aISO','aNRV','aCTL','aFLT','aSV','aAER','aDRN'];
+const PRESETS = [
+  {label:'Tot', on:'*', rack:true},
+  {label:'Doar conducte', on:ALL_PIPE_SUBS, rack:true},
+  {label:'Circuit CO₂', on:['eCOMP','eHX','eVES','pCO2','pOIL','pCHG','pVENT'].concat(ALL_FIT_SUBS,['sT','sP','sF'])},
+  {label:'CO₂ + senzori T°', on:['pCO2','sT']},
+  {label:'Apă și ACM', on:['eHX','eTANK','eVES','ePUMP','eCONN','pSRC','pPRI','pSEC','pACM','pSAF'].concat(ALL_FIT_SUBS,['sT','sP','sF'])},
+  {label:'Siguranță', on:ALL_PIPE_SUBS.concat(['eVES','aSV','aAER','aDRN','sP'])},
+];
+
+// tag → sub-category (order matters: sensors before tanks, DIST before drains…)
+function classifyTag(t){
+  if(/^(TT|TS-)/.test(t)) return 'sT';
+  if(/^(PT|PI-)/.test(t)) return 'sP';
+  if(/^(FS|FT|LS-|ZS-)/.test(t)) return 'sF';
+  if(/^SV-/.test(t)) return 'aSV';
+  if(/^NRV-/.test(t)) return 'aNRV';
+  if(/^AER-/.test(t)) return 'aAER';
+  if(/^(V-301|HP-REG|V-FGB|MV-|EV-|RP-)/.test(t)) return 'aCTL';
+  if(/^(Filtru|FY-|FD-|FO-|SG-)/.test(t)) return 'aFLT';
+  if(/^(DIST-|SURSĂ|APĂ RECE)/.test(t)) return 'eCONN';
+  if(/^(D-|V-UMPLERE|RS-)/.test(t)) return 'aDRN';
+  if(/^(VEX-|REC-|OS-|SEP-)/.test(t)) return 'eVES';
+  if(/^(C-301|RC-)/.test(t)) return 'eCOMP';
+  if(/^(E-3|HX-)/.test(t)) return 'eHX';
+  if(/^(TE-|CF-|Butelii)/.test(t)) return 'eMISC';
+  if(/^T-/.test(t)) return 'eTANK';
+  if(/^P-/.test(t)) return 'ePUMP';
+  if(/^V/.test(t)) return 'aISO';
+  return 'unknown';
+}
+equipRegistry.forEach(g=>{ g.userData.cat = classifyTag(g.userData.info.tag); });
+window.PDC.model.catOf = equipRegistry.map(g=>[g.userData.info.tag, g.userData.cat]);
+
+const ON = {};
+CATS.forEach(c=>c.subs.forEach(sb=>{ ON[sb.key] = true; }));
+let hostFilter = true;
+const catOn = k => ON[k] !== false;
+const pipeVis = p => catOn(p.cat);
+function itemVis(g){
+  if(!catOn(g.userData.cat)) return false;
+  if(!hostFilter) return true;
+  const h = g.userData.hostPipe; if(h) return pipeVis(h);
+  const at = g.userData.attachTo; if(at && at.userData.cat) return catOn(at.userData.cat);
+  return true;
+}
+function applyLayers(){
+  pipeRegistry.forEach(p=>{
+    const v = pipeVis(p);
+    p.meshes.forEach(m=>{ m.visible = v; });
+    if(p.labelSprite) p.labelSprite.visible = v && catOn('lPipe');
   });
-});
+  equipRegistry.forEach(g=>{
+    const v = itemVis(g); g.visible = v;
+    const sp = g.userData.labelSprite;
+    if(sp) sp.visible = v && catOn(g.userData.info.small ? 'lSm' : 'lEq');
+    (g.userData.extraLabels||[]).forEach(x=>{ x.visible = v && catOn('lPipe'); });
+  });
+  EXTRA_DECOR.forEach(d=>{ const v = catOn(d.cat); d.obj.visible = v; if(d.label) d.label.visible = v && catOn('lPipe'); });
+  gLabelsPipe.children.forEach(sp=>{ if(!sp.userData.tied) sp.visible = catOn('lPipe'); });
+  gStructure.children.forEach(m=>{ m.visible = m.userData.rack ? catOn('rack') : catOn('deck'); });
+  gParticles.visible = catOn('flow');
+  renderLayerState();
+}
+
+// ---- panel ----
+const layerBody = document.getElementById('layerBody');
+const countOf = {};
+equipRegistry.forEach(g=>{ countOf[g.userData.cat] = (countOf[g.userData.cat]||0)+1; });
+pipeRegistry.forEach(p=>{ countOf[p.cat] = (countOf[p.cat]||0)+1; });
+let activePreset = 0;
+(function buildLayerPanel(){
+  let html = '<div class="lyPresets">' + PRESETS.map((p,i)=>`<button data-preset="${i}">${p.label}</button>`).join('') + '</div>';
+  html += `<label class="lyFilter"><input type="checkbox" id="lyHostFilter" checked>
+    <span>Armăturile și senzorii apar doar pe conductele și echipamentele afișate</span></label>`;
+  CATS.forEach(c=>{
+    const total = MODEL_CATS.includes(c.key) ? c.subs.reduce((n,sb)=>n+(countOf[sb.key]||0),0) : '';
+    html += `<div class="lyCat${c.key==='pipes'?' open':''}" data-cat="${c.key}">
+      <div class="lyHead"><button class="caret" title="Deschide / închide">▶</button>
+        <label>${c.label}</label><span class="lyCnt">${total}</span>
+        <button class="toggle on" data-cattoggle="${c.key}" title="Toată categoria"></button></div>
+      <div class="lySubs">` + c.subs.map(sb=>`
+        <div class="lySub"><span class="swatch" style="background:${sb.color}"></span>
+          <label data-subl="${sb.key}">${sb.label}</label><span class="lyCnt">${countOf[sb.key]!==undefined?countOf[sb.key]:''}</span>
+          ${MODEL_CATS.includes(c.key)?`<button class="solo" data-solo="${sb.key}" title="Doar asta">◎</button>`:''}
+          <button class="toggle on" data-sub="${sb.key}"></button></div>`).join('') + `</div></div>`;
+  });
+  layerBody.innerHTML = html;
+
+  layerBody.querySelectorAll('.lyHead .caret, .lyHead label').forEach(el=> el.addEventListener('click', ()=> el.closest('.lyCat').classList.toggle('open')));
+  layerBody.querySelectorAll('[data-sub]').forEach(b=> b.addEventListener('click', ()=>{ ON[b.dataset.sub] = !catOn(b.dataset.sub); activePreset=-1; applyLayers(); }));
+  layerBody.querySelectorAll('[data-subl]').forEach(l=> l.addEventListener('click', ()=>{ ON[l.dataset.subl] = !catOn(l.dataset.subl); activePreset=-1; applyLayers(); }));
+  layerBody.querySelectorAll('[data-cattoggle]').forEach(b=> b.addEventListener('click', ()=>{
+    const c = CATS.find(x=>x.key===b.dataset.cattoggle);
+    const allOn = c.subs.every(sb=>catOn(sb.key));
+    c.subs.forEach(sb=>{ ON[sb.key] = !allOn; });
+    activePreset=-1; applyLayers();
+  }));
+  layerBody.querySelectorAll('[data-solo]').forEach(b=> b.addEventListener('click', ()=>{
+    CATS.filter(c=>MODEL_CATS.includes(c.key)).forEach(c=>c.subs.forEach(sb=>{ ON[sb.key] = (sb.key===b.dataset.solo); }));
+    activePreset=-1; applyLayers();
+  }));
+  layerBody.querySelectorAll('[data-preset]').forEach(b=> b.addEventListener('click', ()=>{
+    const p = PRESETS[+b.dataset.preset];
+    CATS.filter(c=>MODEL_CATS.includes(c.key)).forEach(c=>c.subs.forEach(sb=>{ ON[sb.key] = p.on==='*' || p.on.includes(sb.key); }));
+    ON.rack = !!p.rack;
+    activePreset = +b.dataset.preset; applyLayers();
+  }));
+  document.getElementById('lyHostFilter').addEventListener('change', e=>{ hostFilter = e.target.checked; applyLayers(); });
+})();
+function renderLayerState(){
+  layerBody.querySelectorAll('[data-sub]').forEach(b=> b.classList.toggle('on', catOn(b.dataset.sub)));
+  layerBody.querySelectorAll('[data-cattoggle]').forEach(b=>{
+    const c = CATS.find(x=>x.key===b.dataset.cattoggle);
+    const n = c.subs.filter(sb=>catOn(sb.key)).length;
+    b.classList.toggle('on', n===c.subs.length);
+    b.classList.toggle('part', n>0 && n<c.subs.length);
+  });
+  layerBody.querySelectorAll('[data-preset]').forEach(b=> b.classList.toggle('active', +b.dataset.preset===activePreset));
+}
+window.PDC.layers = { on:ON, apply:applyLayers, presets:PRESETS.map(p=>p.label),
+  preset:(i)=>{ const b=layerBody.querySelector('[data-preset="'+i+'"]'); if(b) b.click(); } };
+applyLayers();
 
 /* ---------------------------------------------------------------------
    20b. INTERLOCKS / ALARMS — mirrors the P&ID "Logica de control":
@@ -2045,11 +2692,13 @@ LAYERS.forEach(L=>{
 --------------------------------------------------------------------- */
 function evaluateInterlocks(s){
   return [
-    {ok:s.srcFlowOk, label:'FT-SURSĂ — debit apă sursă confirmat', detail:s.srcFlowOk?'debit OK':'lipsă debit — interblocare pornire PDC'},
-    {ok:s.hpOk, label:'PT-HP — presiune CO₂ în limite', detail:s.hpOk?Math.round(s.pt_hp)+' bar, în limite':Math.round(s.pt_hp)+' bar — peste prag'},
-    {ok:s.turOk, label:'TT-HP-TUR sub setpoint (55 °C / 65 °C la ACM)', detail:s.turOk?'sub setpoint':'peste setpoint — reduce puterea'},
+    {ok:s.srcFlowOk, label:'FS301 (FT-SURSĂ) — debit apă sursă confirmat', detail:s.srcFlowOk?'debit OK':'lipsă debit — interblocare pornire PDC'},
+    {ok:s.hpOk, label:'PT-HP / PSH — presiune CO₂ refulare sub 120 bar', detail:s.hpOk?Math.round(s.pt_hp)+' bar, în limite':Math.round(s.pt_hp)+' bar — peste PSH, compresor oprit'},
+    {ok:s.pt_apa>=1.0 && s.pt_apa<=2.5, label:'PT-APĂ — presiune apă încălzire 1,0–2,5 bar', detail:s.pt_apa.toFixed(1)+' bar'+(s.pt_apa<1.0?' — lipsă apă / aer, PDC blocată':(s.pt_apa>2.5?' — prea mare, verifică VEX-01':', în limite'))},
+    {ok:s.turOk, label:'TT402 (TT-HP-TUR) sub setpoint (55 °C / 65 °C la ACM)', detail:s.turOk?'sub setpoint':'peste setpoint — reduce puterea'},
     {ok:s.deltaTOk, label:'ΔT circuit încălzire — în limite', detail:s.deltaTOk?'ΔT normal':'ΔT excesiv — protecție activă'},
-    {ok:!s.safetyOpen, label:'SV-01 — supapă de siguranță închisă', detail:s.safetyOpen?'DESCHISĂ — evacuează presiune':'închisă'},
+    {ok:!s.safetyOpen, label:'SV-01 — supapă siguranță apă (3 bar) închisă', detail:s.safetyOpen?'DESCHISĂ — evacuează presiune':'închisă'},
+    {ok:!s.svHpOpen, label:'SV-HP / SV-LP / SV-REC — supape siguranță CO₂ închise', detail:s.svHpOpen?'SV-HP DESCHISĂ — descarcă CO₂ în exterior':'închise'},
     {ok:s.acmTemp>=55, label:'TT-ACM — boiler peste pragul de 55 °C',
       detail: s.acmTemp>=60 ? Math.round(s.acmTemp)+' °C — la setpoint, reîncărcare oprită'
             : (s.acmTemp>=55 ? Math.round(s.acmTemp)+' °C — în banda de lucru'
@@ -2142,7 +2791,7 @@ function applyState(){
   });
   eqTankA.bandTop.material.color.copy(fluidColor('apa', state.tA_top));
   eqTankA.bandBot.material.color.copy(fluidColor('apa', state.tA_bot));
-  // stratificarea lanțului: T-ACM3 (livrare) e cel mai cald, T-ACM1 cel
+  // stratificarea lanțului: T-ACM2 (livrare) e cel mai cald, T-ACM1 cel
   // mai rece — asta e chiar efectul pentru care sunt legate în serie.
   eqTAcm.forEach((tk,i)=>{
     const top = state.acmTemp - (eqTAcm.length-1-i)*11;
@@ -2152,11 +2801,11 @@ function applyState(){
   });
   const pdcLed = state.alarmMsg ? MAT.glowRed : (state.running ? MAT.glowGreen : MAT.glowAmber);
   eqComp.group.userData.led && (eqComp.group.userData.led.material = pdcLed);
-  if(eqSafety.group.userData.indicator){
-    const ind = eqSafety.group.userData.indicator;
-    ind.material.emissive = new THREE.Color(state.safetyOpen ? 0xb23a2f : 0x000000);
-    ind.material.emissiveIntensity = state.safetyOpen ? 1.1 : 0;
-  }
+  [[eqSV01, state.safetyOpen], [eqSVHP, state.svHpOpen], [eqSVLP, false], [eqSVREC, false], [eqSVACM, false]].forEach(([sv, open])=>{
+    const ind = sv.userData.indicator; if(!ind) return;
+    ind.material.emissive = new THREE.Color(open ? 0xb23a2f : 0x000000);
+    ind.material.emissiveIntensity = open ? 1.1 : 0;
+  });
 
   document.getElementById('stComp').textContent = state.alarmMsg ? 'BLOCATĂ' : (state.running ? 'ON · ' + Math.round(state.co2_disc) + '°C refulare' : 'OPRIT');
   document.getElementById('stCo2').textContent = Math.round(state.pt_hp)+' / '+Math.round(state.pt_lp)+' bar';
@@ -2165,7 +2814,7 @@ function applyState(){
   if(acmEl) acmEl.textContent = Math.round(state.acmTemp)+' °C' + (state.acmTemp<55 ? ' ↑încarcă' : '');
   document.getElementById('stFlow').textContent = state.running ? Math.round(state.flow*100)+' %' : 'oprit';
 
-  gParticles.visible = LAYERS.find(l=>l.key==='flow').on;
+  gParticles.visible = catOn('flow');
   renderInterlocks();
   if(currentInfoData) showInfo(currentInfoData);
 }
@@ -2218,6 +2867,14 @@ document.querySelectorAll('#viewSeg button').forEach(b=>{
   });
 });
 document.querySelector('#viewSeg button[data-view="iso"]').classList.add('active');
+// public hook: point the camera anywhere (future HMI / CODESYS deep links)
+window.PDC.lookAt = function(pos, target){
+  if(camMode!=='orbit') setCamMode('orbit');
+  animCam = null;
+  camera.position.set(pos[0],pos[1],pos[2]);
+  controls.target.set(target[0],target[1],target[2]);
+  controls.update();
+};
 
 /* ---------------------------------------------------------------------
    23. PICKING (click for info) + hover tooltip
@@ -2240,6 +2897,9 @@ function pick(clientX, clientY){
   raycaster.setFromCamera(mouse, camera);
   const hits = raycaster.intersectObjects([gEquipment, gInstruments], true);
   for(const h of hits){
+    let o = h.object, shown = true;
+    while(o){ if(o.visible===false){ shown=false; break; } o = o.parent; }
+    if(!shown) continue;
     const eq = findEquip(h.object);
     if(eq) return eq;
   }
@@ -2291,12 +2951,13 @@ function animate(){
     if(t>=1) animCam=null;
   }
 
-  if(state.running && LAYERS.find(l=>l.key==='flow').on){
+  if(state.running && catOn('flow')){
     const flowScale = 0.35 + state.flow*0.65; // real velocity (m/s), scaled down at partial flow
     riders.forEach(r=>{
       const p = r.userData.pipe;
       if(p.fixedColor!==undefined){ r.visible=false; return; }
-      r.visible=true;
+      r.visible = pipeVis(p);
+      if(!r.visible) return;
       const dist = p.velocity * flowScale * clock.elapsedTime;
       const t = (r.userData.t0 + dist/p.len) % 1;
       r.position.copy(pathPointAt(p.points, t));
@@ -2306,12 +2967,13 @@ function animate(){
     });
   }
 
-  // gauge needles follow HP/LP pressure (0-130 bar mapped to a 240deg sweep)
+  // gauge needles follow their own pressure field (240deg sweep over the range)
   gInstruments.children.forEach(c=>{
     if(c.userData && c.userData.needle){
       const info = c.userData.info;
-      const bar = info && info.tag && info.tag.indexOf('LP')>=0 ? state.pt_lp : state.pt_hp;
-      const max = info && info.tag && info.tag.indexOf('HP')>=0 ? 160:100;
+      if(!info || !info.gaugeKey) return;
+      const bar = state[info.gaugeKey];
+      const max = info.gaugeMax || 100;
       const a = THREE.MathUtils.degToRad(THREE.MathUtils.lerp(-120,120, THREE.MathUtils.clamp(bar/max,0,1)));
       c.userData.needle.rotation.z = -a;
     }
@@ -2335,5 +2997,6 @@ setTimeout(()=>{
 })();
 </script>
 
+</body></html>
 </body>
 </html>
